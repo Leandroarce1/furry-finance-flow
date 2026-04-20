@@ -92,6 +92,7 @@ export default function FluxoCaixa() {
           <TabsTrigger value="movs">Movimentações</TabsTrigger>
           <TabsTrigger value="diario">Fluxo Diário</TabsTrigger>
           <TabsTrigger value="mensal">Fluxo Mensal</TabsTrigger>
+          <TabsTrigger value="anual">Mês a Mês</TabsTrigger>
         </TabsList>
 
         <TabsContent value="movs">
