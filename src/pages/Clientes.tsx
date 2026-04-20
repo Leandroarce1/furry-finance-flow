@@ -149,17 +149,26 @@ export default function Clientes() {
                       return (
                         <div key={p.id} className="border rounded-xl p-4 bg-gradient-soft">
                           <div className="flex justify-between items-start gap-2">
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <h4 className="font-display font-bold">{p.nome}</h4>
-                                <Badge variant="secondary">{p.especie}</Badge>
-                                <Badge variant="outline">{p.porte}</Badge>
-                                <Badge variant="outline">{p.temperamento}</Badge>
+                            <div className="flex gap-3 flex-1 min-w-0">
+                              {p.foto ? (
+                                <img src={p.foto} alt={p.nome} className="w-16 h-16 rounded-xl object-cover shrink-0 border" />
+                              ) : (
+                                <div className="w-16 h-16 rounded-xl bg-muted flex items-center justify-center shrink-0">
+                                  <PawPrint className="w-6 h-6 text-muted-foreground" />
+                                </div>
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <h4 className="font-display font-bold">{p.nome}</h4>
+                                  <Badge variant="secondary">{p.especie}</Badge>
+                                  <Badge variant="outline">{p.porte}</Badge>
+                                  <Badge variant="outline">{p.temperamento}</Badge>
+                                </div>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                  {p.raca} • {p.peso}kg • {p.idade} • {p.cor}
+                                </p>
+                                {p.observacoes && <p className="text-xs mt-2 text-foreground/80">📝 {p.observacoes}</p>}
                               </div>
-                              <p className="text-sm text-muted-foreground mt-1">
-                                {p.raca} • {p.peso}kg • {p.idade} • {p.cor}
-                              </p>
-                              {p.observacoes && <p className="text-xs mt-2 text-foreground/80">📝 {p.observacoes}</p>}
                             </div>
                             <div className="flex gap-1">
                               <Button size="icon" variant="ghost" onClick={() => openEditPet(p)}><Pencil className="w-4 h-4" /></Button>
