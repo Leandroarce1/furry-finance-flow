@@ -30,7 +30,7 @@ export interface Cliente {
 
 export type CategoriaEntrada = "Banho" | "Tosa" | "Banho+Tosa" | "Hidratação" | "Outros";
 export type CategoriaSaida = "Produtos" | "Energia" | "Aluguel" | "Manutenção" | "Outros";
-export type FormaPagamento = "Dinheiro" | "Pix" | "Cartão Débito" | "Cartão Crédito";
+export type FormaPagamento = "Dinheiro" | "Pix" | "Cartão Débito" | "Cartão Crédito" | "Permuta";
 export type StatusEntrada = "Pago" | "A Receber";
 export type StatusSaida = "Pago" | "A Pagar";
 
@@ -68,11 +68,15 @@ export interface Settings {
 
 // Plano de Contas
 export type TipoPlanoConta = "Receita" | "Despesa";
+export interface SubCategoria {
+  nome: string;
+  valor?: number; // valor padrão (usado como serviço quando tipo = Receita)
+}
 export interface PlanoConta {
   id: string;
   tipo: TipoPlanoConta;
   nome: string;
-  subcategorias: string[];
+  subcategorias: SubCategoria[];
 }
 
 // Metas (categoria × mês)
