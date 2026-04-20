@@ -19,10 +19,15 @@ import type { Cliente, Pet } from "@/lib/types";
 import { fmtBRL, fmtDate, uid } from "@/lib/format";
 
 const emptyCliente: Omit<Cliente, "id"> = { nome: "", cpf: "", whatsapp: "", endereco: "", bairro: "", cidade: "", observacoes: "" };
-// Obs: cpf e endereco mantidos no tipo para compat, mas ocultos da UI.
 const emptyPet: Omit<Pet, "id" | "clienteId"> = {
-  nome: "", especie: "Cão", raca: "", porte: "Pequeno", peso: 0, cor: "", idade: "", temperamento: "Dócil", observacoes: "",
+  nome: "", especie: "Cão", raca: "Indefinido", porte: "Pequeno", peso: 0, cor: "", idade: "", temperamento: "Dócil", observacoes: "", foto: "",
 };
+
+const RACAS = [
+  "Pug", "Yorkshire Terrier", "Dachshund (Salsicha)", "Shih Tzu", "Bulldog Francês",
+  "Lhasa Apso", "Poodle", "Beagle", "Vira Lata", "Chow Chow", "Pastor Alemão",
+  "Siberian Husky", "Rottweiler", "Labrador Retriever", "Golden Retriever", "Indefinido",
+];
 
 export default function Clientes() {
   const [clientes, setClientes] = useClientes();
