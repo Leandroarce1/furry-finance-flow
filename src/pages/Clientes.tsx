@@ -244,7 +244,6 @@ export default function Clientes() {
                     <p className="text-xs text-muted-foreground truncate">{c.whatsapp}</p>
                     <div className="flex items-center gap-2 mt-2">
                       <Badge variant="secondary" className="text-xs"><PawPrint className="w-3 h-3 mr-1" />{qPets} pet{qPets !== 1 ? "s" : ""}</Badge>
-                      <span className="text-xs text-muted-foreground truncate">{c.bairro}</span>
                     </div>
                   </div>
                 </div>
