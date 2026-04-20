@@ -47,8 +47,13 @@ export default function Clientes() {
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
     if (!q) return clientes;
-    return clientes.filter((c) => c.nome.toLowerCase().includes(q) || c.whatsapp.toLowerCase().includes(q));
-  }, [clientes, search]);
+    return clientes.filter((c) => {
+      if (c.nome.toLowerCase().includes(q)) return true;
+      if (c.whatsapp.toLowerCase().includes(q)) return true;
+      const clientePets = pets.filter((p) => p.clienteId === c.id);
+      return clientePets.some((p) => p.nome.toLowerCase().includes(q));
+    });
+  }, [clientes, pets, search]);
 
   const selected = clientes.find((c) => c.id === selectedId) || null;
   const selectedPets = pets.filter((p) => p.clienteId === selectedId);
