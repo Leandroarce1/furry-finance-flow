@@ -128,9 +128,6 @@ export default function Clientes() {
               </div>
               <div className="text-sm space-y-2">
                 <p className="flex items-center gap-2 text-muted-foreground"><Phone className="w-4 h-4" />{selected.whatsapp || "—"}</p>
-                {(selected.bairro || selected.cidade) && (
-                  <p className="flex items-start gap-2 text-muted-foreground"><MapPin className="w-4 h-4 mt-0.5" /><span>{selected.bairro}{selected.bairro && selected.cidade ? " — " : ""}{selected.cidade}</span></p>
-                )}
                 {selected.observacoes && <p className="text-xs bg-muted p-3 rounded-lg mt-3">{selected.observacoes}</p>}
               </div>
             </CardContent>
