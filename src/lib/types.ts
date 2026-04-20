@@ -43,6 +43,8 @@ export interface Entrada {
   clienteId?: string;
   petId?: string;
   status: StatusEntrada;
+  contaBancariaId?: string;
+  planoContaId?: string;
 }
 
 export interface Saida {
@@ -53,9 +55,50 @@ export interface Saida {
   valor: number;
   formaPagamento: FormaPagamento;
   status: StatusSaida;
+  contaBancariaId?: string;
+  fornecedorId?: string;
+  planoContaId?: string;
 }
 
 export interface Settings {
   nomePetshop: string;
   corTema: string;
+}
+
+// Plano de Contas
+export type TipoPlanoConta = "Receita" | "Despesa";
+export interface PlanoConta {
+  id: string;
+  tipo: TipoPlanoConta;
+  nome: string;
+  subcategorias: string[];
+}
+
+// Metas (categoria × mês)
+export interface Meta {
+  id: string;
+  ano: number;
+  planoContaId: string;
+  // 12 valores mensais (jan..dez)
+  valores: number[];
+}
+
+// Bancos
+export interface ContaBancaria {
+  id: string;
+  nome: string;
+  saldoInicial: number;
+  dataInicio: string; // yyyy-mm-dd
+}
+
+// Fornecedores
+export interface Fornecedor {
+  id: string;
+  nome: string;
+  documento: string;
+  endereco: string;
+  cidade: string;
+  uf: string;
+  telefone: string;
+  email: string;
 }
