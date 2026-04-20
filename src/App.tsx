@@ -11,7 +11,7 @@ import NotFound from "./pages/NotFound.tsx";
 import PlanoContas from "./pages/PlanoContas.tsx";
 import Metas from "./pages/Metas.tsx";
 import Bancos from "./pages/Bancos.tsx";
-import Fornecedores from "./pages/Fornecedores.tsx";
+
 import PrevistoRealizado from "./pages/PrevistoRealizado.tsx";
 import DRE from "./pages/DRE.tsx";
 import FluxoCaixa from "./pages/FluxoCaixa.tsx";
