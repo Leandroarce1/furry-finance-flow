@@ -3,65 +3,87 @@ import type {
   PlanoConta, Meta, ContaBancaria, Fornecedor,
 } from "./types";
 
+// Clientes reais importados da planilha 2026
 export const seedClientes: Cliente[] = [
-  { id: "c1", nome: "Mariana Souza", cpf: "123.456.789-00", whatsapp: "(11) 98765-4321", endereco: "Rua das Flores, 120", bairro: "Vila Mariana", cidade: "São Paulo", observacoes: "Prefere atendimento pela manhã." },
-  { id: "c2", nome: "Rafael Almeida", cpf: "987.654.321-00", whatsapp: "(11) 91234-5678", endereco: "Av. Paulista, 900", bairro: "Bela Vista", cidade: "São Paulo", observacoes: "" },
-  { id: "c3", nome: "Beatriz Lima", cpf: "456.123.789-11", whatsapp: "(11) 99988-7766", endereco: "Rua Augusta, 555", bairro: "Consolação", cidade: "São Paulo", observacoes: "Cliente desde 2023." },
+  { id: "c1", nome: "Lidiane (Poodle Moto)", cpf: "", whatsapp: "(92) 99300-1262", endereco: "", bairro: "", cidade: "", observacoes: "" },
+  { id: "c2", nome: "Kelly Cidade", cpf: "", whatsapp: "(92) 98403-0377", endereco: "", bairro: "", cidade: "", observacoes: "" },
+  { id: "c3", nome: "Eliandro", cpf: "", whatsapp: "(92) 99195-8585", endereco: "", bairro: "", cidade: "", observacoes: "" },
+  { id: "c4", nome: "Sitronio", cpf: "", whatsapp: "(92) 99461-6952", endereco: "", bairro: "", cidade: "", observacoes: "" },
+  { id: "c5", nome: "Virna", cpf: "", whatsapp: "(92) 99482-6010", endereco: "", bairro: "", cidade: "", observacoes: "" },
+  { id: "c6", nome: "Beatriz", cpf: "", whatsapp: "(92) 99141-8472", endereco: "", bairro: "", cidade: "", observacoes: "" },
+  { id: "c7", nome: "Frank", cpf: "", whatsapp: "(92) 98228-5688", endereco: "", bairro: "", cidade: "", observacoes: "" },
+  { id: "c8", nome: "Neide Moça", cpf: "", whatsapp: "(92) 98276-6394", endereco: "", bairro: "", cidade: "", observacoes: "" },
+  { id: "c9", nome: "Maria Eduarda", cpf: "", whatsapp: "(92) 99498-5456", endereco: "", bairro: "", cidade: "", observacoes: "" },
+  { id: "c10", nome: "Inez", cpf: "", whatsapp: "(92) 99128-7555", endereco: "", bairro: "", cidade: "", observacoes: "" },
+  { id: "c11", nome: "Francisca Dilizia", cpf: "", whatsapp: "(92) 90108-3686", endereco: "", bairro: "", cidade: "", observacoes: "" },
+  { id: "c12", nome: "Angela", cpf: "", whatsapp: "(92) 98159-1807", endereco: "", bairro: "", cidade: "", observacoes: "" },
+  { id: "c13", nome: "Mayara", cpf: "", whatsapp: "(92) 98198-0186", endereco: "", bairro: "", cidade: "", observacoes: "" },
+  { id: "c14", nome: "Erivan", cpf: "", whatsapp: "(92) 99143-4008", endereco: "", bairro: "", cidade: "", observacoes: "" },
+  { id: "c15", nome: "Debora", cpf: "", whatsapp: "(92) 99519-4530", endereco: "", bairro: "", cidade: "", observacoes: "" },
 ];
 
 export const seedPets: Pet[] = [
-  { id: "p1", clienteId: "c1", nome: "Thor", especie: "Cão", raca: "Golden Retriever", porte: "Grande", peso: 32, cor: "Dourado", idade: "3 anos", temperamento: "Dócil", observacoes: "Adora água. Alergia a shampoo com fragrância forte." },
-  { id: "p2", clienteId: "c2", nome: "Mel", especie: "Cão", raca: "Shih Tzu", porte: "Pequeno", peso: 6, cor: "Branco e caramelo", idade: "5 anos", temperamento: "Dócil", observacoes: "Não gosta de secador alto." },
-  { id: "p3", clienteId: "c3", nome: "Luna", especie: "Gato", raca: "Persa", porte: "Pequeno", peso: 4, cor: "Cinza", idade: "2 anos", temperamento: "Agitado", observacoes: "Necessita contenção delicada." },
+  { id: "p1", clienteId: "c1", nome: "Sofia", especie: "Cão", raca: "Poodle", porte: "Pequeno", peso: 0, cor: "", idade: "", temperamento: "Dócil", observacoes: "" },
+  { id: "p2", clienteId: "c2", nome: "Meg", especie: "Cão", raca: "Buldog Francês", porte: "Médio", peso: 0, cor: "", idade: "", temperamento: "Dócil", observacoes: "" },
+  { id: "p3", clienteId: "c2", nome: "Bolt", especie: "Cão", raca: "Labrador", porte: "Grande", peso: 0, cor: "", idade: "", temperamento: "Dócil", observacoes: "" },
+  { id: "p4", clienteId: "c3", nome: "Mel", especie: "Cão", raca: "Buldog Americano", porte: "Grande", peso: 0, cor: "", idade: "", temperamento: "Dócil", observacoes: "" },
+  { id: "p5", clienteId: "c4", nome: "Poly", especie: "Cão", raca: "Poodle Médio", porte: "Médio", peso: 0, cor: "", idade: "", temperamento: "Dócil", observacoes: "" },
+  { id: "p6", clienteId: "c4", nome: "Juju", especie: "Cão", raca: "Poodle / Shih Tzu", porte: "Pequeno", peso: 0, cor: "", idade: "", temperamento: "Dócil", observacoes: "" },
+  { id: "p7", clienteId: "c8", nome: "Mia", especie: "Cão", raca: "Yorkshire", porte: "Pequeno", peso: 0, cor: "", idade: "", temperamento: "Dócil", observacoes: "" },
+  { id: "p8", clienteId: "c8", nome: "Zoe", especie: "Cão", raca: "Yorkshire", porte: "Pequeno", peso: 0, cor: "", idade: "", temperamento: "Dócil", observacoes: "" },
+  { id: "p9", clienteId: "c10", nome: "Estrela", especie: "Cão", raca: "Vira-lata", porte: "Médio", peso: 0, cor: "", idade: "", temperamento: "Dócil", observacoes: "" },
+  { id: "p10", clienteId: "c10", nome: "Hanna", especie: "Cão", raca: "Vira-lata", porte: "Médio", peso: 0, cor: "", idade: "", temperamento: "Dócil", observacoes: "" },
+  { id: "p11", clienteId: "c13", nome: "Zeus", especie: "Cão", raca: "Shih Tzu", porte: "Pequeno", peso: 0, cor: "", idade: "", temperamento: "Dócil", observacoes: "" },
+  { id: "p12", clienteId: "c13", nome: "Luna", especie: "Cão", raca: "Shih Tzu", porte: "Pequeno", peso: 0, cor: "", idade: "", temperamento: "Dócil", observacoes: "" },
+  { id: "p13", clienteId: "c14", nome: "Luna", especie: "Cão", raca: "Chow Chow", porte: "Grande", peso: 0, cor: "", idade: "", temperamento: "Dócil", observacoes: "" },
+  { id: "p14", clienteId: "c15", nome: "Príncipe", especie: "Cão", raca: "Spitz Alemão", porte: "Pequeno", peso: 0, cor: "", idade: "", temperamento: "Dócil", observacoes: "" },
 ];
 
+// Plano de contas conforme planilha
 export const seedPlanoContas: PlanoConta[] = [
-  { id: "pc-r1", tipo: "Receita", nome: "Banho", subcategorias: ["Pequeno", "Médio", "Grande"] },
-  { id: "pc-r2", tipo: "Receita", nome: "Tosa", subcategorias: ["Higiênica", "Completa", "Bebê"] },
-  { id: "pc-r3", tipo: "Receita", nome: "Banho+Tosa", subcategorias: [] },
-  { id: "pc-r4", tipo: "Receita", nome: "Hidratação", subcategorias: [] },
-  { id: "pc-r5", tipo: "Receita", nome: "Outros Serviços", subcategorias: ["Corte de unha", "Limpeza de ouvido"] },
-  { id: "pc-d1", tipo: "Despesa", nome: "Produtos", subcategorias: ["Shampoo", "Condicionador", "Perfume"] },
-  { id: "pc-d2", tipo: "Despesa", nome: "Energia", subcategorias: [] },
-  { id: "pc-d3", tipo: "Despesa", nome: "Aluguel", subcategorias: [] },
-  { id: "pc-d4", tipo: "Despesa", nome: "Manutenção", subcategorias: ["Equipamentos", "Predial"] },
-  { id: "pc-d5", tipo: "Despesa", nome: "Outros", subcategorias: [] },
+  { id: "pc-r1", tipo: "Receita", nome: "Serviços", subcategorias: [
+    "Banho Porte Pequeno", "Banho Porte Médio", "Banho Porte Grande",
+    "Banho e Tosa Higiênica Peq.", "Banho e Tosa Higiênica Med.", "Banho e Tosa Higiênica Gra.",
+    "Banho e Tosa Porte Pequeno", "Banho e Tosa Porte Médio", "Banho e Tosa Porte Grande",
+    "Banho e Tosa Bebê", "Banho e Tosa Higiênica + Desembolo",
+  ] },
+  { id: "pc-r2", tipo: "Receita", nome: "Serviços II", subcategorias: ["Corte de Unha"] },
+  { id: "pc-d1", tipo: "Despesa", nome: "Despesas Fixas", subcategorias: ["Energia Elétrica", "Internet", "Aluguel"] },
+  { id: "pc-d2", tipo: "Despesa", nome: "Custo de Consumo", subcategorias: ["Shampoo Neutro", "Pré lavagem", "Laços", "Algodão", "Perfume", "Hidratante", "Afiação de Lâminas"] },
+  { id: "pc-d3", tipo: "Despesa", nome: "Custo de Descartáveis", subcategorias: ["Limpeza", "Copo Descartáveis", "Papel Higiênico", "Água"] },
+  { id: "pc-d4", tipo: "Despesa", nome: "Comissões", subcategorias: ["Comissão Emidio"] },
+  { id: "pc-d5", tipo: "Despesa", nome: "Despesas Variáveis", subcategorias: ["Medicamento"] },
+  { id: "pc-d6", tipo: "Despesa", nome: "Taxas de Cartão", subcategorias: ["Pagseguro", "Mercado Pago"] },
+  { id: "pc-d7", tipo: "Despesa", nome: "Manutenção", subcategorias: ["Equipamento", "Predial"] },
 ];
 
+// Bancos conforme planilha
 export const seedBancos: ContaBancaria[] = [
-  { id: "b1", nome: "Banco do Brasil CC", saldoInicial: 3000, dataInicio: "2026-01-01" },
-  { id: "b2", nome: "Caixa Dinheiro", saldoInicial: 500, dataInicio: "2026-01-01" },
+  { id: "b1", nome: "Mercado Pago Jurídico", saldoInicial: 0, dataInicio: "2026-01-01" },
+  { id: "b2", nome: "Pagseguro Jurídico", saldoInicial: 0, dataInicio: "2026-01-01" },
+  { id: "b3", nome: "Pagseguro", saldoInicial: 0, dataInicio: "2026-01-01" },
+  { id: "b4", nome: "Caixa da Loja", saldoInicial: 0, dataInicio: "2026-01-01" },
+  { id: "b5", nome: "Permuta", saldoInicial: 0, dataInicio: "2026-01-01" },
 ];
 
-export const seedFornecedores: Fornecedor[] = [
-  { id: "f1", nome: "PetSupply Distribuidora", documento: "12.345.678/0001-90", endereco: "Rua Comercial, 200", cidade: "São Paulo", uf: "SP", telefone: "(11) 3456-7890", email: "vendas@petsupply.com" },
-  { id: "f2", nome: "Eletro Manutenção Ltda", documento: "98.765.432/0001-10", endereco: "Av. Industrial, 50", cidade: "São Paulo", uf: "SP", telefone: "(11) 2345-6789", email: "contato@eletroman.com" },
-];
+export const seedFornecedores: Fornecedor[] = [];
 
+// Metas conforme planilha (apenas Janeiro preenchido)
 export const seedMetas: Meta[] = [
-  { id: "m1", ano: 2026, planoContaId: "pc-r1", valores: [800, 800, 900, 1000, 1000, 1100, 1100, 1100, 1200, 1200, 1300, 1500] },
-  { id: "m2", ano: 2026, planoContaId: "pc-r2", valores: [400, 400, 450, 500, 500, 550, 550, 550, 600, 600, 650, 750] },
-  { id: "m3", ano: 2026, planoContaId: "pc-r3", valores: [600, 600, 700, 800, 800, 900, 900, 900, 1000, 1000, 1100, 1300] },
-  { id: "m4", ano: 2026, planoContaId: "pc-d1", valores: [200, 200, 250, 250, 250, 300, 300, 300, 350, 350, 400, 400] },
-  { id: "m5", ano: 2026, planoContaId: "pc-d2", valores: [350, 350, 380, 380, 380, 400, 400, 400, 380, 380, 380, 400] },
-  { id: "m6", ano: 2026, planoContaId: "pc-d3", valores: Array(12).fill(1500) },
+  { id: "m1", ano: 2026, planoContaId: "pc-r1", valores: [7500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+  { id: "m2", ano: 2026, planoContaId: "pc-d1", valores: [1240, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+  { id: "m3", ano: 2026, planoContaId: "pc-d2", valores: [480, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+  { id: "m4", ano: 2026, planoContaId: "pc-d3", valores: [40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+  { id: "m5", ano: 2026, planoContaId: "pc-d4", valores: [3000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+  { id: "m6", ano: 2026, planoContaId: "pc-d5", valores: [100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+  { id: "m7", ano: 2026, planoContaId: "pc-d6", valores: [40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
 ];
 
-export const seedEntradas: Entrada[] = [
-  { id: "e1", data: "2026-04-02", descricao: "Banho + Tosa Thor", categoria: "Banho+Tosa", valor: 130, formaPagamento: "Pix", clienteId: "c1", petId: "p1", status: "Pago", contaBancariaId: "b1", planoContaId: "pc-r3" },
-  { id: "e2", data: "2026-04-05", descricao: "Banho Mel", categoria: "Banho", valor: 60, formaPagamento: "Dinheiro", clienteId: "c2", petId: "p2", status: "Pago", contaBancariaId: "b2", planoContaId: "pc-r1" },
-  { id: "e3", data: "2026-04-09", descricao: "Hidratação Luna", categoria: "Hidratação", valor: 80, formaPagamento: "Cartão Débito", clienteId: "c3", petId: "p3", status: "Pago", contaBancariaId: "b1", planoContaId: "pc-r4" },
-  { id: "e4", data: "2026-04-12", descricao: "Tosa Higiênica Mel", categoria: "Tosa", valor: 50, formaPagamento: "Pix", clienteId: "c2", petId: "p2", status: "Pago", contaBancariaId: "b1", planoContaId: "pc-r2" },
-  { id: "e5", data: "2026-04-15", descricao: "Banho + Tosa Thor", categoria: "Banho+Tosa", valor: 130, formaPagamento: "Cartão Crédito", clienteId: "c1", petId: "p1", status: "A Receber", contaBancariaId: "b1", planoContaId: "pc-r3" },
-];
-
-export const seedSaidas: Saida[] = [
-  { id: "s1", data: "2026-04-03", descricao: "Compra de shampoo neutro 5L", categoria: "Produtos", valor: 220, formaPagamento: "Pix", status: "Pago", contaBancariaId: "b1", fornecedorId: "f1", planoContaId: "pc-d1" },
-  { id: "s2", data: "2026-04-10", descricao: "Conta de energia", categoria: "Energia", valor: 380, formaPagamento: "Dinheiro", status: "Pago", contaBancariaId: "b2", planoContaId: "pc-d2" },
-  { id: "s3", data: "2026-04-14", descricao: "Manutenção do secador", categoria: "Manutenção", valor: 150, formaPagamento: "Dinheiro", status: "A Pagar", contaBancariaId: "b2", fornecedorId: "f2", planoContaId: "pc-d4" },
-];
+// Sem lançamentos pré-cadastrados — a planilha não traz movimentações ainda.
+export const seedEntradas: Entrada[] = [];
+export const seedSaidas: Saida[] = [];
 
 export const seedSettings: Settings = {
-  nomePetshop: "PetShop Pet & Cia",
+  nomePetshop: "Pet & Cia Banho e Tosa",
   corTema: "#7C3AED",
 };

@@ -57,23 +57,21 @@ export function AppSidebar() {
   const [settings] = useSettings();
 
   return (
-    <Sidebar collapsible="icon" className="border-r">
+    <Sidebar collapsible="offcanvas" className="border-r">
       <SidebarContent className="bg-sidebar">
         <div className="px-4 py-5 flex items-center gap-3 border-b border-sidebar-border">
           <div className="w-9 h-9 rounded-xl bg-gradient-primary flex items-center justify-center shadow-elegant shrink-0">
             <Sparkles className="w-5 h-5 text-primary-foreground" />
           </div>
-          {!collapsed && (
-            <div className="min-w-0">
-              <p className="font-display font-bold text-sm leading-tight truncate">{settings.nomePetshop}</p>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Gestão Completa</p>
-            </div>
-          )}
+          <div className="min-w-0">
+            <p className="font-display font-bold text-sm leading-tight truncate">{settings.nomePetshop}</p>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Gestão Completa</p>
+          </div>
         </div>
 
         {groups.map((g) => (
           <SidebarGroup key={g.label}>
-            {!collapsed && <SidebarGroupLabel>{g.label}</SidebarGroupLabel>}
+            <SidebarGroupLabel>{g.label}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {g.items.map((item) => {
@@ -93,7 +91,7 @@ export function AppSidebar() {
                           }
                         >
                           <item.icon className="w-4 h-4 shrink-0" />
-                          {!collapsed && <span className="text-sm">{item.title}</span>}
+                          <span className="text-sm">{item.title}</span>
                         </NavLink>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
