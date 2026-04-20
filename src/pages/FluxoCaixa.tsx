@@ -164,6 +164,39 @@ export default function FluxoCaixa() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        <TabsContent value="anual">
+          <Card className="shadow-card">
+            <CardContent className="p-0 overflow-x-auto">
+              <Table>
+                <TableHeader><TableRow>
+                  <TableHead className="sticky left-0 bg-card">Tipo</TableHead>
+                  {MESES_LABEL.map((m) => <TableHead key={m} className="text-right">{m}</TableHead>)}
+                  <TableHead className="text-right">Total</TableHead>
+                </TableRow></TableHeader>
+                <TableBody>
+                  <TableRow>
+                    <TableCell className="sticky left-0 bg-card font-medium text-success">Entradas</TableCell>
+                    {fluxoMensal.map((v) => <TableCell key={v.mes} className="text-right">{fmtBRL(v.entradas)}</TableCell>)}
+                    <TableCell className="text-right font-semibold text-success">{fmtBRL(fluxoMensal.reduce((a, x) => a + x.entradas, 0))}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="sticky left-0 bg-card font-medium text-destructive">Saídas</TableCell>
+                    {fluxoMensal.map((v) => <TableCell key={v.mes} className="text-right">{fmtBRL(v.saidas)}</TableCell>)}
+                    <TableCell className="text-right font-semibold text-destructive">{fmtBRL(fluxoMensal.reduce((a, x) => a + x.saidas, 0))}</TableCell>
+                  </TableRow>
+                  <TableRow className="bg-muted/30">
+                    <TableCell className="sticky left-0 bg-muted/30 font-semibold">Saldo</TableCell>
+                    {fluxoMensal.map((v) => (
+                      <TableCell key={v.mes} className={`text-right font-medium ${v.saldo >= 0 ? "text-success" : "text-destructive"}`}>{fmtBRL(v.saldo)}</TableCell>
+                    ))}
+                    <TableCell className={`text-right font-bold ${fluxoMensal.reduce((a, x) => a + x.saldo, 0) >= 0 ? "text-success" : "text-destructive"}`}>{fmtBRL(fluxoMensal.reduce((a, x) => a + x.saldo, 0))}</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
     </AppLayout>
   );
