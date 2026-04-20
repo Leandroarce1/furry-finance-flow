@@ -19,10 +19,15 @@ import type { Cliente, Pet } from "@/lib/types";
 import { fmtBRL, fmtDate, uid } from "@/lib/format";
 
 const emptyCliente: Omit<Cliente, "id"> = { nome: "", cpf: "", whatsapp: "", endereco: "", bairro: "", cidade: "", observacoes: "" };
-// Obs: cpf e endereco mantidos no tipo para compat, mas ocultos da UI.
 const emptyPet: Omit<Pet, "id" | "clienteId"> = {
-  nome: "", especie: "Cão", raca: "", porte: "Pequeno", peso: 0, cor: "", idade: "", temperamento: "Dócil", observacoes: "",
+  nome: "", especie: "Cão", raca: "Indefinido", porte: "Pequeno", peso: 0, cor: "", idade: "", temperamento: "Dócil", observacoes: "", foto: "",
 };
+
+const RACAS = [
+  "Pug", "Yorkshire Terrier", "Dachshund (Salsicha)", "Shih Tzu", "Bulldog Francês",
+  "Lhasa Apso", "Poodle", "Beagle", "Vira Lata", "Chow Chow", "Pastor Alemão",
+  "Siberian Husky", "Rottweiler", "Labrador Retriever", "Golden Retriever", "Indefinido",
+];
 
 export default function Clientes() {
   const [clientes, setClientes] = useClientes();
@@ -42,8 +47,13 @@ export default function Clientes() {
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
     if (!q) return clientes;
-    return clientes.filter((c) => c.nome.toLowerCase().includes(q) || c.whatsapp.toLowerCase().includes(q));
-  }, [clientes, search]);
+    return clientes.filter((c) => {
+      if (c.nome.toLowerCase().includes(q)) return true;
+      if (c.whatsapp.toLowerCase().includes(q)) return true;
+      const clientePets = pets.filter((p) => p.clienteId === c.id);
+      return clientePets.some((p) => p.nome.toLowerCase().includes(q));
+    });
+  }, [clientes, pets, search]);
 
   const selected = clientes.find((c) => c.id === selectedId) || null;
   const selectedPets = pets.filter((p) => p.clienteId === selectedId);
@@ -118,9 +128,6 @@ export default function Clientes() {
               </div>
               <div className="text-sm space-y-2">
                 <p className="flex items-center gap-2 text-muted-foreground"><Phone className="w-4 h-4" />{selected.whatsapp || "—"}</p>
-                {(selected.bairro || selected.cidade) && (
-                  <p className="flex items-start gap-2 text-muted-foreground"><MapPin className="w-4 h-4 mt-0.5" /><span>{selected.bairro}{selected.bairro && selected.cidade ? " — " : ""}{selected.cidade}</span></p>
-                )}
                 {selected.observacoes && <p className="text-xs bg-muted p-3 rounded-lg mt-3">{selected.observacoes}</p>}
               </div>
             </CardContent>
@@ -142,17 +149,26 @@ export default function Clientes() {
                       return (
                         <div key={p.id} className="border rounded-xl p-4 bg-gradient-soft">
                           <div className="flex justify-between items-start gap-2">
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <h4 className="font-display font-bold">{p.nome}</h4>
-                                <Badge variant="secondary">{p.especie}</Badge>
-                                <Badge variant="outline">{p.porte}</Badge>
-                                <Badge variant="outline">{p.temperamento}</Badge>
+                            <div className="flex gap-3 flex-1 min-w-0">
+                              {p.foto ? (
+                                <img src={p.foto} alt={p.nome} className="w-16 h-16 rounded-xl object-cover shrink-0 border" />
+                              ) : (
+                                <div className="w-16 h-16 rounded-xl bg-muted flex items-center justify-center shrink-0">
+                                  <PawPrint className="w-6 h-6 text-muted-foreground" />
+                                </div>
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <h4 className="font-display font-bold">{p.nome}</h4>
+                                  <Badge variant="secondary">{p.especie}</Badge>
+                                  <Badge variant="outline">{p.porte}</Badge>
+                                  <Badge variant="outline">{p.temperamento}</Badge>
+                                </div>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                  {p.raca} • {p.peso}kg • {p.idade} • {p.cor}
+                                </p>
+                                {p.observacoes && <p className="text-xs mt-2 text-foreground/80">📝 {p.observacoes}</p>}
                               </div>
-                              <p className="text-sm text-muted-foreground mt-1">
-                                {p.raca} • {p.peso}kg • {p.idade} • {p.cor}
-                              </p>
-                              {p.observacoes && <p className="text-xs mt-2 text-foreground/80">📝 {p.observacoes}</p>}
                             </div>
                             <div className="flex gap-1">
                               <Button size="icon" variant="ghost" onClick={() => openEditPet(p)}><Pencil className="w-4 h-4" /></Button>
@@ -210,7 +226,7 @@ export default function Clientes() {
     >
       <div className="relative mb-4 max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <Input placeholder="Buscar por nome ou WhatsApp..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+        <Input placeholder="Buscar por cliente, pet ou telefone..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -228,7 +244,6 @@ export default function Clientes() {
                     <p className="text-xs text-muted-foreground truncate">{c.whatsapp}</p>
                     <div className="flex items-center gap-2 mt-2">
                       <Badge variant="secondary" className="text-xs"><PawPrint className="w-3 h-3 mr-1" />{qPets} pet{qPets !== 1 ? "s" : ""}</Badge>
-                      <span className="text-xs text-muted-foreground truncate">{c.bairro}</span>
                     </div>
                   </div>
                 </div>
@@ -254,8 +269,6 @@ function ClienteDialog({ open, setOpen, form, setForm, onSave, editing }: any) {
         <div className="grid grid-cols-2 gap-3">
           <div className="col-span-2"><Label>Nome do tutor *</Label><Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} /></div>
           <div className="col-span-2"><Label>WhatsApp</Label><Input value={form.whatsapp} onChange={(e) => setForm({ ...form, whatsapp: e.target.value })} /></div>
-          <div><Label>Bairro</Label><Input value={form.bairro} onChange={(e) => setForm({ ...form, bairro: e.target.value })} /></div>
-          <div><Label>Cidade</Label><Input value={form.cidade} onChange={(e) => setForm({ ...form, cidade: e.target.value })} /></div>
           <div className="col-span-2"><Label>Observações</Label><Textarea value={form.observacoes} onChange={(e) => setForm({ ...form, observacoes: e.target.value })} /></div>
         </div>
         <DialogFooter>
@@ -273,6 +286,34 @@ function PetDialog({ open, setOpen, form, setForm, onSave, editing }: any) {
       <DialogContent className="max-w-lg">
         <DialogHeader><DialogTitle>{editing ? "Editar" : "Novo"} pet</DialogTitle></DialogHeader>
         <div className="grid grid-cols-2 gap-3">
+          <div className="col-span-2 flex items-center gap-3">
+            {form.foto ? (
+              <img src={form.foto} alt="Pet" className="w-20 h-20 rounded-xl object-cover border" />
+            ) : (
+              <div className="w-20 h-20 rounded-xl bg-muted flex items-center justify-center">
+                <PawPrint className="w-8 h-8 text-muted-foreground" />
+              </div>
+            )}
+            <div className="flex-1">
+              <Label>Foto do pet</Label>
+              <Input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const reader = new FileReader();
+                  reader.onload = () => setForm({ ...form, foto: reader.result as string });
+                  reader.readAsDataURL(file);
+                }}
+              />
+              {form.foto && (
+                <Button type="button" variant="ghost" size="sm" className="mt-1 h-7 text-xs" onClick={() => setForm({ ...form, foto: "" })}>
+                  Remover foto
+                </Button>
+              )}
+            </div>
+          </div>
           <div className="col-span-2"><Label>Nome do pet *</Label><Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} /></div>
           <div>
             <Label>Espécie</Label>
@@ -281,7 +322,13 @@ function PetDialog({ open, setOpen, form, setForm, onSave, editing }: any) {
               <SelectContent><SelectItem value="Cão">Cão</SelectItem><SelectItem value="Gato">Gato</SelectItem></SelectContent>
             </Select>
           </div>
-          <div><Label>Raça</Label><Input value={form.raca} onChange={(e) => setForm({ ...form, raca: e.target.value })} /></div>
+          <div>
+            <Label>Raça</Label>
+            <Select value={form.raca} onValueChange={(v) => setForm({ ...form, raca: v })}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>{RACAS.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
+            </Select>
+          </div>
           <div>
             <Label>Porte</Label>
             <Select value={form.porte} onValueChange={(v) => setForm({ ...form, porte: v })}>

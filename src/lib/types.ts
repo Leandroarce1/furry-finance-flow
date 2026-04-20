@@ -14,6 +14,7 @@ export interface Pet {
   idade: string;
   temperamento: Temperamento;
   observacoes: string;
+  foto?: string;
 }
 
 export interface Cliente {
