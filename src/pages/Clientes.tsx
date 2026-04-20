@@ -286,6 +286,34 @@ function PetDialog({ open, setOpen, form, setForm, onSave, editing }: any) {
       <DialogContent className="max-w-lg">
         <DialogHeader><DialogTitle>{editing ? "Editar" : "Novo"} pet</DialogTitle></DialogHeader>
         <div className="grid grid-cols-2 gap-3">
+          <div className="col-span-2 flex items-center gap-3">
+            {form.foto ? (
+              <img src={form.foto} alt="Pet" className="w-20 h-20 rounded-xl object-cover border" />
+            ) : (
+              <div className="w-20 h-20 rounded-xl bg-muted flex items-center justify-center">
+                <PawPrint className="w-8 h-8 text-muted-foreground" />
+              </div>
+            )}
+            <div className="flex-1">
+              <Label>Foto do pet</Label>
+              <Input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const reader = new FileReader();
+                  reader.onload = () => setForm({ ...form, foto: reader.result as string });
+                  reader.readAsDataURL(file);
+                }}
+              />
+              {form.foto && (
+                <Button type="button" variant="ghost" size="sm" className="mt-1 h-7 text-xs" onClick={() => setForm({ ...form, foto: "" })}>
+                  Remover foto
+                </Button>
+              )}
+            </div>
+          </div>
           <div className="col-span-2"><Label>Nome do pet *</Label><Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} /></div>
           <div>
             <Label>Espécie</Label>
@@ -294,7 +322,13 @@ function PetDialog({ open, setOpen, form, setForm, onSave, editing }: any) {
               <SelectContent><SelectItem value="Cão">Cão</SelectItem><SelectItem value="Gato">Gato</SelectItem></SelectContent>
             </Select>
           </div>
-          <div><Label>Raça</Label><Input value={form.raca} onChange={(e) => setForm({ ...form, raca: e.target.value })} /></div>
+          <div>
+            <Label>Raça</Label>
+            <Select value={form.raca} onValueChange={(v) => setForm({ ...form, raca: v })}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>{RACAS.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
+            </Select>
+          </div>
           <div>
             <Label>Porte</Label>
             <Select value={form.porte} onValueChange={(v) => setForm({ ...form, porte: v })}>
