@@ -38,7 +38,6 @@ const groups: { label: string; items: { title: string; url: string; icon: any }[
     items: [
       { title: "Plano de Contas", url: "/plano-de-contas", icon: BookOpen },
       { title: "Bancos", url: "/bancos", icon: Building2 },
-      { title: "Fornecedores", url: "/fornecedores", icon: Truck },
       { title: "Metas", url: "/metas", icon: Target },
     ],
   },
