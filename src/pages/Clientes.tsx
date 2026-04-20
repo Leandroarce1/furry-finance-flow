@@ -19,6 +19,7 @@ import type { Cliente, Pet } from "@/lib/types";
 import { fmtBRL, fmtDate, uid } from "@/lib/format";
 
 const emptyCliente: Omit<Cliente, "id"> = { nome: "", cpf: "", whatsapp: "", endereco: "", bairro: "", cidade: "", observacoes: "" };
+// Obs: cpf e endereco mantidos no tipo para compat, mas ocultos da UI.
 const emptyPet: Omit<Pet, "id" | "clienteId"> = {
   nome: "", especie: "Cão", raca: "", porte: "Pequeno", peso: 0, cor: "", idade: "", temperamento: "Dócil", observacoes: "",
 };
@@ -117,8 +118,9 @@ export default function Clientes() {
               </div>
               <div className="text-sm space-y-2">
                 <p className="flex items-center gap-2 text-muted-foreground"><Phone className="w-4 h-4" />{selected.whatsapp || "—"}</p>
-                <p className="flex items-center gap-2 text-muted-foreground"><ScrollText className="w-4 h-4" />CPF: {selected.cpf || "—"}</p>
-                <p className="flex items-start gap-2 text-muted-foreground"><MapPin className="w-4 h-4 mt-0.5" /><span>{selected.endereco}<br />{selected.bairro} — {selected.cidade}</span></p>
+                {(selected.bairro || selected.cidade) && (
+                  <p className="flex items-start gap-2 text-muted-foreground"><MapPin className="w-4 h-4 mt-0.5" /><span>{selected.bairro}{selected.bairro && selected.cidade ? " — " : ""}{selected.cidade}</span></p>
+                )}
                 {selected.observacoes && <p className="text-xs bg-muted p-3 rounded-lg mt-3">{selected.observacoes}</p>}
               </div>
             </CardContent>
@@ -251,9 +253,7 @@ function ClienteDialog({ open, setOpen, form, setForm, onSave, editing }: any) {
         <DialogHeader><DialogTitle>{editing ? "Editar" : "Novo"} cliente</DialogTitle></DialogHeader>
         <div className="grid grid-cols-2 gap-3">
           <div className="col-span-2"><Label>Nome do tutor *</Label><Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} /></div>
-          <div><Label>CPF</Label><Input value={form.cpf} onChange={(e) => setForm({ ...form, cpf: e.target.value })} /></div>
-          <div><Label>WhatsApp</Label><Input value={form.whatsapp} onChange={(e) => setForm({ ...form, whatsapp: e.target.value })} /></div>
-          <div className="col-span-2"><Label>Endereço</Label><Input value={form.endereco} onChange={(e) => setForm({ ...form, endereco: e.target.value })} /></div>
+          <div className="col-span-2"><Label>WhatsApp</Label><Input value={form.whatsapp} onChange={(e) => setForm({ ...form, whatsapp: e.target.value })} /></div>
           <div><Label>Bairro</Label><Input value={form.bairro} onChange={(e) => setForm({ ...form, bairro: e.target.value })} /></div>
           <div><Label>Cidade</Label><Input value={form.cidade} onChange={(e) => setForm({ ...form, cidade: e.target.value })} /></div>
           <div className="col-span-2"><Label>Observações</Label><Textarea value={form.observacoes} onChange={(e) => setForm({ ...form, observacoes: e.target.value })} /></div>

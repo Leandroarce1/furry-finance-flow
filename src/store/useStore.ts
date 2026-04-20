@@ -8,12 +8,13 @@ import type {
   PlanoConta, Meta, ContaBancaria, Fornecedor,
 } from "@/lib/types";
 
-export function useClientes() { return useLocalStorage<Cliente[]>("ps_clientes", seedClientes); }
-export function usePets() { return useLocalStorage<Pet[]>("ps_pets", seedPets); }
-export function useEntradas() { return useLocalStorage<Entrada[]>("ps_entradas", seedEntradas); }
-export function useSaidas() { return useLocalStorage<Saida[]>("ps_saidas", seedSaidas); }
-export function useSettings() { return useLocalStorage<Settings>("ps_settings", seedSettings); }
-export function usePlanoContas() { return useLocalStorage<PlanoConta[]>("ps_plano_contas", seedPlanoContas); }
-export function useMetas() { return useLocalStorage<Meta[]>("ps_metas", seedMetas); }
-export function useBancos() { return useLocalStorage<ContaBancaria[]>("ps_bancos", seedBancos); }
-export function useFornecedores() { return useLocalStorage<Fornecedor[]>("ps_fornecedores", seedFornecedores); }
+// v2 — atualizado com dados reais da planilha 2026
+export function useClientes() { return useLocalStorage<Cliente[]>("ps_clientes_v2", seedClientes); }
+export function usePets() { return useLocalStorage<Pet[]>("ps_pets_v2", seedPets); }
+export function useEntradas() { return useLocalStorage<Entrada[]>("ps_entradas_v2", seedEntradas); }
+export function useSaidas() { return useLocalStorage<Saida[]>("ps_saidas_v2", seedSaidas); }
+export function useSettings() { return useLocalStorage<Settings>("ps_settings_v2", seedSettings); }
+export function usePlanoContas() { return useLocalStorage<PlanoConta[]>("ps_plano_contas_v2", seedPlanoContas); }
+export function useMetas() { return useLocalStorage<Meta[]>("ps_metas_v2", seedMetas); }
+export function useBancos() { return useLocalStorage<ContaBancaria[]>("ps_bancos_v2", seedBancos); }
+export function useFornecedores() { return useLocalStorage<Fornecedor[]>("ps_fornecedores_v2", seedFornecedores); }
