@@ -39,22 +39,42 @@ export const seedPets: Pet[] = [
   { id: "p14", clienteId: "c15", nome: "Príncipe", especie: "Cão", raca: "Spitz Alemão", porte: "Pequeno", peso: 0, cor: "", idade: "", temperamento: "Dócil", observacoes: "" },
 ];
 
-// Plano de contas conforme planilha
+// Plano de contas conforme planilha — subcategorias com valor padrão (serviços)
 export const seedPlanoContas: PlanoConta[] = [
   { id: "pc-r1", tipo: "Receita", nome: "Serviços", subcategorias: [
-    "Banho Porte Pequeno", "Banho Porte Médio", "Banho Porte Grande",
-    "Banho e Tosa Higiênica Peq.", "Banho e Tosa Higiênica Med.", "Banho e Tosa Higiênica Gra.",
-    "Banho e Tosa Porte Pequeno", "Banho e Tosa Porte Médio", "Banho e Tosa Porte Grande",
-    "Banho e Tosa Bebê", "Banho e Tosa Higiênica + Desembolo",
+    { nome: "Banho Porte Pequeno", valor: 40 },
+    { nome: "Banho Porte Médio", valor: 50 },
+    { nome: "Banho Porte Grande", valor: 60 },
+    { nome: "Banho e Tosa Higiênica Peq.", valor: 50 },
+    { nome: "Banho e Tosa Higiênica Med.", valor: 60 },
+    { nome: "Banho e Tosa Higiênica Gra.", valor: 70 },
+    { nome: "Banho e Tosa Porte Pequeno", valor: 70 },
+    { nome: "Banho e Tosa Porte Médio", valor: 90 },
+    { nome: "Banho e Tosa Porte Grande", valor: 110 },
+    { nome: "Banho e Tosa Bebê", valor: 40 },
+    { nome: "Banho e Tosa Higiênica + Desembolo", valor: 80 },
   ] },
-  { id: "pc-r2", tipo: "Receita", nome: "Serviços II", subcategorias: ["Corte de Unha"] },
-  { id: "pc-d1", tipo: "Despesa", nome: "Despesas Fixas", subcategorias: ["Energia Elétrica", "Internet", "Aluguel"] },
-  { id: "pc-d2", tipo: "Despesa", nome: "Custo de Consumo", subcategorias: ["Shampoo Neutro", "Pré lavagem", "Laços", "Algodão", "Perfume", "Hidratante", "Afiação de Lâminas"] },
-  { id: "pc-d3", tipo: "Despesa", nome: "Custo de Descartáveis", subcategorias: ["Limpeza", "Copo Descartáveis", "Papel Higiênico", "Água"] },
-  { id: "pc-d4", tipo: "Despesa", nome: "Comissões", subcategorias: ["Comissão Emidio"] },
-  { id: "pc-d5", tipo: "Despesa", nome: "Despesas Variáveis", subcategorias: ["Medicamento"] },
-  { id: "pc-d6", tipo: "Despesa", nome: "Taxas de Cartão", subcategorias: ["Pagseguro", "Mercado Pago"] },
-  { id: "pc-d7", tipo: "Despesa", nome: "Manutenção", subcategorias: ["Equipamento", "Predial"] },
+  { id: "pc-r2", tipo: "Receita", nome: "Serviços II", subcategorias: [
+    { nome: "Corte de Unha", valor: 15 },
+  ] },
+  { id: "pc-d1", tipo: "Despesa", nome: "Despesas Fixas", subcategorias: [
+    { nome: "Energia Elétrica" }, { nome: "Internet" }, { nome: "Aluguel" },
+  ] },
+  { id: "pc-d2", tipo: "Despesa", nome: "Custo de Consumo", subcategorias: [
+    { nome: "Shampoo Neutro" }, { nome: "Pré lavagem" }, { nome: "Laços" },
+    { nome: "Algodão" }, { nome: "Perfume" }, { nome: "Hidratante" }, { nome: "Afiação de Lâminas" },
+  ] },
+  { id: "pc-d3", tipo: "Despesa", nome: "Custo de Descartáveis", subcategorias: [
+    { nome: "Limpeza" }, { nome: "Copo Descartáveis" }, { nome: "Papel Higiênico" }, { nome: "Água" },
+  ] },
+  { id: "pc-d4", tipo: "Despesa", nome: "Comissões", subcategorias: [{ nome: "Comissão Emidio" }] },
+  { id: "pc-d5", tipo: "Despesa", nome: "Despesas Variáveis", subcategorias: [{ nome: "Medicamento" }] },
+  { id: "pc-d6", tipo: "Despesa", nome: "Taxas de Cartão", subcategorias: [
+    { nome: "Pagseguro" }, { nome: "Mercado Pago" },
+  ] },
+  { id: "pc-d7", tipo: "Despesa", nome: "Manutenção", subcategorias: [
+    { nome: "Equipamento" }, { nome: "Predial" },
+  ] },
 ];
 
 // Bancos conforme planilha
