@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -62,6 +63,8 @@ export default function Financeiro() {
   const now = new Date();
   const [filtroMes, setFiltroMes] = useState(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`);
   const [anoAnual, setAnoAnual] = useState<number>(now.getFullYear());
+
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [openE, setOpenE] = useState(false);
   const [editE, setEditE] = useState<Entrada | null>(null);
@@ -156,11 +159,25 @@ export default function Financeiro() {
     setFormS((prev) => ({ ...prev, descricao: i.nome, planoContaId: i.planoContaId }));
   }
 
-  function openNewE() {
+  function openNewE(prefill?: Partial<Omit<Entrada, "id">>) {
     setEditE(null);
-    setFormE({ ...emptyE, data: todayISO(), dataVencimento: todayISO(), contaBancariaId: bancos[0]?.id || "" });
+    setFormE({ ...emptyE, data: todayISO(), dataVencimento: todayISO(), contaBancariaId: bancos[0]?.id || "", ...prefill });
     setOpenE(true);
   }
+
+  // Deep-link: abrir "Nova Entrada" com cliente pré-preenchido a partir de /financeiro?novaEntrada=1&clienteId=xxx[&petId=yyy]
+  useEffect(() => {
+    if (searchParams.get("novaEntrada") === "1") {
+      const clienteId = searchParams.get("clienteId") || "";
+      const petId = searchParams.get("petId") || "";
+      openNewE({ clienteId, petId });
+      searchParams.delete("novaEntrada");
+      searchParams.delete("clienteId");
+      searchParams.delete("petId");
+      setSearchParams(searchParams, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
   function openEditE(e: Entrada) { setEditE(e); setFormE({ ...emptyE, ...e }); setOpenE(true); }
   function saveE() {
     if (!formE.planoContaId) return toast.error("Selecione a categoria");
@@ -333,7 +350,7 @@ export default function Financeiro() {
                 </Select>
               </div>
             </div>
-            <Button onClick={openNewE}><Plus className="w-4 h-4 mr-1" />Nova Entrada</Button>
+            <Button onClick={() => openNewE()}><Plus className="w-4 h-4 mr-1" />Nova Entrada</Button>
           </div>
           <Card>
             <CardContent className="p-0 overflow-x-auto">
@@ -482,7 +499,7 @@ export default function Financeiro() {
             </div>
             <div className="flex gap-2">
               <Button variant="outline" onClick={openNewS}><Plus className="w-4 h-4 mr-1" />Saída</Button>
-              <Button onClick={openNewE}><Plus className="w-4 h-4 mr-1" />Entrada</Button>
+              <Button onClick={() => openNewE()}><Plus className="w-4 h-4 mr-1" />Entrada</Button>
             </div>
           </div>
           <Card>
