@@ -35,8 +35,11 @@ export default function Clientes() {
   const [clientes, setClientes] = useClientes();
   const [pets, setPets] = usePets();
   const [entradas] = useEntradas();
+  const [bancos] = useBancos();
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [filtroPet, setFiltroPet] = useState<string>("todos");
 
   const [openCli, setOpenCli] = useState(false);
   const [editCli, setEditCli] = useState<Cliente | null>(null);
