@@ -104,7 +104,20 @@ export default function Financeiro() {
     return arr;
   }, [planoContas]);
 
-  const filtroEntradas = useMemo(() => entradas.filter((e) => monthKey(e.data) === filtroMes).sort((a, b) => b.data.localeCompare(a.data)), [entradas, filtroMes]);
+  // Filtros adicionais da lista de entradas
+  const [filtroStatus, setFiltroStatus] = useState<string>("todos");
+  const [filtroConta, setFiltroConta] = useState<string>("todas");
+
+  // Data de referência para listagem: vencimento se houver, senão data
+  const refDate = (e: Entrada) => e.dataVencimento || e.data;
+
+  const filtroEntradas = useMemo(() => {
+    return entradas
+      .filter((e) => monthKey(refDate(e)) === filtroMes)
+      .filter((e) => filtroStatus === "todos" ? true : calcStatus(e) === filtroStatus)
+      .filter((e) => filtroConta === "todas" ? true : e.contaBancariaId === filtroConta)
+      .sort((a, b) => refDate(b).localeCompare(refDate(a)));
+  }, [entradas, filtroMes, filtroStatus, filtroConta]);
   const filtroSaidas = useMemo(() => saidas.filter((s) => monthKey(s.data) === filtroMes).sort((a, b) => b.data.localeCompare(a.data)), [saidas, filtroMes]);
 
   const totalE = filtroEntradas.reduce((a, b) => a + b.valor, 0);
