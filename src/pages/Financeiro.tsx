@@ -28,7 +28,27 @@ const CAT_S: CategoriaSaida[] = ["Produtos", "Energia", "Aluguel", "Manutenção
 const FP: FormaPagamento[] = ["Dinheiro", "Pix", "Cartão Débito", "Cartão Crédito", "Permuta"];
 const MESES_LABEL = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 
-const emptyE: Omit<Entrada, "id"> = { data: todayISO(), descricao: "", categoria: "Banho", valor: 0, formaPagamento: "Pix", clienteId: "", petId: "", status: "Pago", contaBancariaId: "", observacoes: "" };
+const emptyE: Omit<Entrada, "id"> = { data: todayISO(), descricao: "", categoria: "Banho", valor: 0, formaPagamento: "Pix", clienteId: "", petId: "", status: "Pago", contaBancariaId: "", subcategoria: "", dataVencimento: todayISO(), dataPagamento: "", observacoes: "" };
+
+// Status calculado para entradas (vencimento/pagamento)
+type StatusCalc = "Concluído" | "Atrasado" | "Previsto para hoje" | "Previsto" | "—";
+function calcStatus(e: { dataVencimento?: string; dataPagamento?: string }): StatusCalc {
+  if (e.dataPagamento) return "Concluído";
+  if (!e.dataVencimento) return "—";
+  const hoje = todayISO();
+  if (e.dataVencimento < hoje) return "Atrasado";
+  if (e.dataVencimento === hoje) return "Previsto para hoje";
+  return "Previsto";
+}
+function statusBadgeClass(s: StatusCalc): string {
+  switch (s) {
+    case "Concluído": return "bg-success/15 text-success border-success/30 hover:bg-success/15";
+    case "Atrasado": return "bg-destructive/15 text-destructive border-destructive/30 hover:bg-destructive/15";
+    case "Previsto para hoje": return "bg-amber-500/15 text-amber-600 border-amber-500/30 hover:bg-amber-500/15 dark:text-amber-400";
+    case "Previsto": return "bg-amber-500/10 text-amber-700 border-amber-500/20 dark:text-amber-300";
+    default: return "bg-muted text-muted-foreground border-border";
+  }
+}
 const emptyS: Omit<Saida, "id"> = { data: todayISO(), descricao: "", categoria: "Produtos", valor: 0, formaPagamento: "Pix", status: "Pago", contaBancariaId: "" };
 
 export default function Financeiro() {
