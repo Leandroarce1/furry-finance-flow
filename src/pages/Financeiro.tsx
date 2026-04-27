@@ -46,6 +46,7 @@ export default function Financeiro() {
   const [openE, setOpenE] = useState(false);
   const [editE, setEditE] = useState<Entrada | null>(null);
   const [formE, setFormE] = useState<Omit<Entrada, "id">>(emptyE);
+  const [clientePopOpen, setClientePopOpen] = useState(false);
 
   const [openS, setOpenS] = useState(false);
   const [editS, setEditS] = useState<Saida | null>(null);
