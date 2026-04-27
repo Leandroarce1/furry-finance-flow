@@ -9,8 +9,8 @@ import type {
 } from "@/lib/types";
 
 // v3 — subcategorias do Plano de Contas viraram objetos { nome, valor }
-export function useClientes() { return useLocalStorage<Cliente[]>("ps_clientes_v2", seedClientes); }
-export function usePets() { return useLocalStorage<Pet[]>("ps_pets_v2", seedPets); }
+export function useClientes() { return useLocalStorage<Cliente[]>("ps_clientes_v3", seedClientes); }
+export function usePets() { return useLocalStorage<Pet[]>("ps_pets_v3", seedPets); }
 export function useEntradas() { return useLocalStorage<Entrada[]>("ps_entradas_v2", seedEntradas); }
 export function useSaidas() { return useLocalStorage<Saida[]>("ps_saidas_v2", seedSaidas); }
 export function useSettings() { return useLocalStorage<Settings>("ps_settings_v2", seedSettings); }
