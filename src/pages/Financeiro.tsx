@@ -28,7 +28,27 @@ const CAT_S: CategoriaSaida[] = ["Produtos", "Energia", "Aluguel", "Manutenção
 const FP: FormaPagamento[] = ["Dinheiro", "Pix", "Cartão Débito", "Cartão Crédito", "Permuta"];
 const MESES_LABEL = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 
-const emptyE: Omit<Entrada, "id"> = { data: todayISO(), descricao: "", categoria: "Banho", valor: 0, formaPagamento: "Pix", clienteId: "", petId: "", status: "Pago", contaBancariaId: "", observacoes: "" };
+const emptyE: Omit<Entrada, "id"> = { data: todayISO(), descricao: "", categoria: "Banho", valor: 0, formaPagamento: "Pix", clienteId: "", petId: "", status: "Pago", contaBancariaId: "", subcategoria: "", dataVencimento: todayISO(), dataPagamento: "", observacoes: "" };
+
+// Status calculado para entradas (vencimento/pagamento)
+type StatusCalc = "Concluído" | "Atrasado" | "Previsto para hoje" | "Previsto" | "—";
+function calcStatus(e: { dataVencimento?: string; dataPagamento?: string }): StatusCalc {
+  if (e.dataPagamento) return "Concluído";
+  if (!e.dataVencimento) return "—";
+  const hoje = todayISO();
+  if (e.dataVencimento < hoje) return "Atrasado";
+  if (e.dataVencimento === hoje) return "Previsto para hoje";
+  return "Previsto";
+}
+function statusBadgeClass(s: StatusCalc): string {
+  switch (s) {
+    case "Concluído": return "bg-success/15 text-success border-success/30 hover:bg-success/15";
+    case "Atrasado": return "bg-destructive/15 text-destructive border-destructive/30 hover:bg-destructive/15";
+    case "Previsto para hoje": return "bg-amber-500/15 text-amber-600 border-amber-500/30 hover:bg-amber-500/15 dark:text-amber-400";
+    case "Previsto": return "bg-amber-500/10 text-amber-700 border-amber-500/20 dark:text-amber-300";
+    default: return "bg-muted text-muted-foreground border-border";
+  }
+}
 const emptyS: Omit<Saida, "id"> = { data: todayISO(), descricao: "", categoria: "Produtos", valor: 0, formaPagamento: "Pix", status: "Pago", contaBancariaId: "" };
 
 export default function Financeiro() {
@@ -57,6 +77,13 @@ export default function Financeiro() {
     () => bancos.find((b) => /caixa/i.test(b.nome) && /loja/i.test(b.nome))?.id || bancos[0]?.id || "",
     [bancos],
   );
+  const permutaBancoId = useMemo(
+    () => bancos.find((b) => /^permuta$/i.test(b.nome))?.id || "",
+    [bancos],
+  );
+
+  // Categorias de receita do plano de contas
+  const categoriasReceita = useMemo(() => planoContas.filter((p) => p.tipo === "Receita"), [planoContas]);
 
   // Lista de serviços (subcategorias do plano de contas tipo Receita)
   const servicos = useMemo(() => {
@@ -77,7 +104,20 @@ export default function Financeiro() {
     return arr;
   }, [planoContas]);
 
-  const filtroEntradas = useMemo(() => entradas.filter((e) => monthKey(e.data) === filtroMes).sort((a, b) => b.data.localeCompare(a.data)), [entradas, filtroMes]);
+  // Filtros adicionais da lista de entradas
+  const [filtroStatus, setFiltroStatus] = useState<string>("todos");
+  const [filtroConta, setFiltroConta] = useState<string>("todas");
+
+  // Data de referência para listagem: vencimento se houver, senão data
+  const refDate = (e: Entrada) => e.dataVencimento || e.data;
+
+  const filtroEntradas = useMemo(() => {
+    return entradas
+      .filter((e) => monthKey(refDate(e)) === filtroMes)
+      .filter((e) => filtroStatus === "todos" ? true : calcStatus(e) === filtroStatus)
+      .filter((e) => filtroConta === "todas" ? true : e.contaBancariaId === filtroConta)
+      .sort((a, b) => refDate(b).localeCompare(refDate(a)));
+  }, [entradas, filtroMes, filtroStatus, filtroConta]);
   const filtroSaidas = useMemo(() => saidas.filter((s) => monthKey(s.data) === filtroMes).sort((a, b) => b.data.localeCompare(a.data)), [saidas, filtroMes]);
 
   const totalE = filtroEntradas.reduce((a, b) => a + b.valor, 0);
@@ -104,15 +144,33 @@ export default function Financeiro() {
     setFormS((prev) => ({ ...prev, descricao: i.nome, planoContaId: i.planoContaId }));
   }
 
-  function openNewE() { setEditE(null); setFormE({ ...emptyE, data: todayISO(), contaBancariaId: bancos[0]?.id || "" }); setOpenE(true); }
-  function openEditE(e: Entrada) { setEditE(e); setFormE(e); setOpenE(true); }
+  function openNewE() {
+    setEditE(null);
+    setFormE({ ...emptyE, data: todayISO(), dataVencimento: todayISO(), contaBancariaId: bancos[0]?.id || "" });
+    setOpenE(true);
+  }
+  function openEditE(e: Entrada) { setEditE(e); setFormE({ ...emptyE, ...e }); setOpenE(true); }
   function saveE() {
-    if (!formE.descricao.trim()) return toast.error("Descrição obrigatória");
-    const conta = bancoEfetivo(formE.contaBancariaId, formE.formaPagamento);
-    if (!conta) return toast.error("Selecione o banco que vai receber");
+    if (!formE.planoContaId) return toast.error("Selecione a categoria");
+    if (!formE.subcategoria) return toast.error("Selecione a subcategoria");
+    if (!formE.valor || formE.valor <= 0) return toast.error("Informe um valor maior que zero");
+    if (!formE.contaBancariaId) return toast.error("Selecione a conta bancária");
+    if (!formE.dataVencimento) return toast.error("Informe a data de vencimento");
+
+    // se conta = Permuta, força forma = Permuta
+    let formaPagamento = formE.formaPagamento;
+    if (permutaBancoId && formE.contaBancariaId === permutaBancoId) formaPagamento = "Permuta";
+
+    const dataRef = formE.dataPagamento || formE.dataVencimento || todayISO();
+    const descricao = formE.subcategoria || formE.descricao || "";
+    const status = formE.dataPagamento ? "Pago" : "A Receber";
+
     const clean: Omit<Entrada, "id"> = {
       ...formE,
-      contaBancariaId: conta,
+      formaPagamento,
+      data: dataRef,
+      descricao,
+      status,
       clienteId: formE.clienteId || undefined,
       petId: formE.petId || undefined,
     };
@@ -213,32 +271,71 @@ export default function Financeiro() {
         </TabsContent>
 
         <TabsContent value="entradas">
-          <div className="flex justify-end mb-3"><Button onClick={openNewE}><Plus className="w-4 h-4 mr-1" />Nova Entrada</Button></div>
+          <div className="flex flex-wrap items-end gap-2 justify-between mb-3">
+            <div className="flex flex-wrap gap-2">
+              <div>
+                <Label className="text-xs text-muted-foreground">Status</Label>
+                <Select value={filtroStatus} onValueChange={setFiltroStatus}>
+                  <SelectTrigger className="w-[180px]"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todos os status</SelectItem>
+                    <SelectItem value="Concluído">Concluído</SelectItem>
+                    <SelectItem value="Previsto para hoje">Previsto para hoje</SelectItem>
+                    <SelectItem value="Previsto">Previsto</SelectItem>
+                    <SelectItem value="Atrasado">Atrasado</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Conta bancária</Label>
+                <Select value={filtroConta} onValueChange={setFiltroConta}>
+                  <SelectTrigger className="w-[200px]"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todas">Todas as contas</SelectItem>
+                    {bancos.map((b) => <SelectItem key={b.id} value={b.id}>{b.nome}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <Button onClick={openNewE}><Plus className="w-4 h-4 mr-1" />Nova Entrada</Button>
+          </div>
           <Card>
             <CardContent className="p-0 overflow-x-auto">
               <Table>
                 <TableHeader><TableRow>
-                  <TableHead>Data</TableHead><TableHead>Descrição</TableHead><TableHead>Categoria</TableHead>
-                  <TableHead>Banco</TableHead><TableHead>Pagamento</TableHead><TableHead>Status</TableHead>
-                  <TableHead className="text-right">Valor</TableHead><TableHead></TableHead>
+                  <TableHead>Data</TableHead>
+                  <TableHead>Categoria</TableHead>
+                  <TableHead>Subcategoria</TableHead>
+                  <TableHead>Cliente</TableHead>
+                  <TableHead className="text-right">Valor</TableHead>
+                  <TableHead>Conta</TableHead>
+                  <TableHead>Forma Pgto</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead></TableHead>
                 </TableRow></TableHeader>
                 <TableBody>
-                  {filtroEntradas.map((e) => (
-                    <TableRow key={e.id}>
-                      <TableCell>{fmtDate(e.data)}</TableCell>
-                      <TableCell className="font-medium">{e.descricao}</TableCell>
-                      <TableCell><Badge variant="secondary">{e.categoria}</Badge></TableCell>
-                      <TableCell className="text-sm">{bancoNome(e.contaBancariaId)}</TableCell>
-                      <TableCell className="text-sm">{e.formaPagamento}</TableCell>
-                      <TableCell><Badge variant={e.status === "Pago" ? "default" : "outline"}>{e.status}</Badge></TableCell>
-                      <TableCell className="text-right font-medium text-success">{fmtBRL(e.valor)}</TableCell>
-                      <TableCell className="text-right">
-                        <Button size="icon" variant="ghost" onClick={() => openEditE(e)}><Pencil className="w-4 h-4" /></Button>
-                        <DeleteBtn onConfirm={() => delE(e.id)} />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                  {filtroEntradas.length === 0 && <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-8">Sem registros no período.</TableCell></TableRow>}
+                  {filtroEntradas.map((e) => {
+                    const st = calcStatus(e);
+                    const cli = clientes.find((c) => c.id === e.clienteId);
+                    const cat = planoContas.find((p) => p.id === e.planoContaId)?.nome || "—";
+                    return (
+                      <TableRow key={e.id}>
+                        <TableCell className="whitespace-nowrap">{fmtDate(refDate(e))}</TableCell>
+                        <TableCell><Badge variant="secondary">{cat}</Badge></TableCell>
+                        <TableCell className="font-medium">{e.subcategoria || e.descricao}</TableCell>
+                        <TableCell className="text-sm">{cli?.nome || "—"}</TableCell>
+                        <TableCell className="text-right font-medium text-success">{fmtBRL(e.valor)}</TableCell>
+                        <TableCell className="text-sm">{bancoNome(e.contaBancariaId)}</TableCell>
+                        <TableCell className="text-sm">{e.formaPagamento}</TableCell>
+                        <TableCell><Badge variant="outline" className={statusBadgeClass(st)}>{st}</Badge></TableCell>
+                        <TableCell className="text-right">
+                          <Button size="icon" variant="ghost" onClick={() => openEditE(e)}><Pencil className="w-4 h-4" /></Button>
+                          <DeleteBtn onConfirm={() => delE(e.id)} />
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                  {filtroEntradas.length === 0 && <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-8">Sem registros no período.</TableCell></TableRow>}
                 </TableBody>
               </Table>
               <div className="flex justify-end px-4 py-3 border-t bg-muted/30">
@@ -333,18 +430,118 @@ export default function Financeiro() {
         <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>{editE ? "Editar" : "Nova"} entrada</DialogTitle></DialogHeader>
           <div className="grid grid-cols-2 gap-3 max-h-[70vh] overflow-y-auto pr-1">
-            <div><Label>Data do atendimento</Label><Input type="date" value={formE.data} onChange={(e) => setFormE({ ...formE, data: e.target.value })} /></div>
+            {/* Categoria */}
             <div>
-              <Label>Status</Label>
-              <Select value={formE.status} onValueChange={(v: any) => setFormE({ ...formE, status: v })}>
+              <Label>Categoria *</Label>
+              <Select
+                value={formE.planoContaId || ""}
+                onValueChange={(v) => setFormE({ ...formE, planoContaId: v, subcategoria: "" })}
+              >
+                <SelectTrigger><SelectValue placeholder="Selecione…" /></SelectTrigger>
+                <SelectContent>
+                  {categoriasReceita.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Subcategoria filha */}
+            <div>
+              <Label>Subcategoria *</Label>
+              <Select
+                value={formE.subcategoria || ""}
+                onValueChange={(v) => {
+                  const pc = categoriasReceita.find((p) => p.id === formE.planoContaId);
+                  const sub = pc?.subcategorias.find((s) => s.nome === v);
+                  setFormE({
+                    ...formE,
+                    subcategoria: v,
+                    descricao: v,
+                    valor: sub?.valor && (!formE.valor || formE.valor === 0) ? sub.valor : (sub?.valor ?? formE.valor),
+                  });
+                }}
+                disabled={!formE.planoContaId}
+              >
+                <SelectTrigger><SelectValue placeholder={formE.planoContaId ? "Selecione…" : "Escolha a categoria"} /></SelectTrigger>
+                <SelectContent>
+                  {(categoriasReceita.find((p) => p.id === formE.planoContaId)?.subcategorias || []).map((s) => (
+                    <SelectItem key={s.nome} value={s.nome}>
+                      {s.nome}{s.valor ? ` — ${fmtBRL(s.valor)}` : ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Valor */}
+            <div>
+              <Label>Valor (R$) *</Label>
+              <Input
+                type="number"
+                step="0.01"
+                value={formE.valor || ""}
+                onChange={(e) => setFormE({ ...formE, valor: parseFloat(e.target.value) || 0 })}
+              />
+            </div>
+
+            {/* Conta bancária */}
+            <div>
+              <Label>Conta bancária *</Label>
+              <Select
+                value={formE.contaBancariaId || ""}
+                onValueChange={(v) => {
+                  // se conta = Permuta, força forma = Permuta
+                  const ehPermuta = permutaBancoId && v === permutaBancoId;
+                  setFormE({ ...formE, contaBancariaId: v, formaPagamento: ehPermuta ? "Permuta" : formE.formaPagamento });
+                }}
+              >
+                <SelectTrigger><SelectValue placeholder="Selecione…" /></SelectTrigger>
+                <SelectContent>
+                  {bancos.map((b) => <SelectItem key={b.id} value={b.id}>{b.nome}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Datas */}
+            <div>
+              <Label>Data de vencimento *</Label>
+              <Input
+                type="date"
+                value={formE.dataVencimento || ""}
+                onChange={(e) => setFormE({ ...formE, dataVencimento: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>Data de pagamento</Label>
+              <Input
+                type="date"
+                value={formE.dataPagamento || ""}
+                onChange={(e) => setFormE({ ...formE, dataPagamento: e.target.value })}
+              />
+            </div>
+
+            {/* Forma de pagamento */}
+            <div className="col-span-2">
+              <Label>
+                Forma de pagamento *
+                {permutaBancoId && formE.contaBancariaId === permutaBancoId && (
+                  <span className="text-xs text-muted-foreground ml-2">(Conta Permuta → forma Permuta)</span>
+                )}
+              </Label>
+              <Select
+                value={formE.formaPagamento}
+                onValueChange={(v: any) => setFormE({ ...formE, formaPagamento: v })}
+                disabled={!!(permutaBancoId && formE.contaBancariaId === permutaBancoId)}
+              >
                 <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent><SelectItem value="Pago">Pago</SelectItem><SelectItem value="A Receber">A Receber</SelectItem></SelectContent>
+                <SelectContent>{FP.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
               </Select>
             </div>
 
             {/* Cliente com autocomplete */}
             <div className="col-span-2">
-              <Label>Cliente</Label>
+              <Label>Cliente (opcional)</Label>
               <Popover open={clientePopOpen} onOpenChange={setClientePopOpen}>
                 <PopoverTrigger asChild>
                   <Button variant="outline" role="combobox" className="w-full justify-between font-normal">
@@ -386,95 +583,55 @@ export default function Financeiro() {
             </div>
 
             {/* Pets do cliente */}
-            {formE.clienteId && (
+            {formE.clienteId && petsDoCliente(formE.clienteId).length > 0 && (
               <div className="col-span-2">
                 <Label>Pet atendido</Label>
-                {petsDoCliente(formE.clienteId).length === 0 ? (
-                  <p className="text-xs text-muted-foreground py-2">Este cliente não possui pets cadastrados.</p>
-                ) : (
-                  <div className="flex flex-wrap gap-2 mt-1">
-                    {petsDoCliente(formE.clienteId).map((p) => {
-                      const active = formE.petId === p.id;
-                      return (
-                        <button
-                          key={p.id}
-                          type="button"
-                          onClick={() => setFormE({ ...formE, petId: active ? "" : p.id })}
-                          className={cn(
-                            "flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm transition-colors",
-                            active ? "bg-primary text-primary-foreground border-primary" : "bg-background hover:bg-muted",
-                          )}
-                        >
-                          {p.foto ? (
-                            <img src={p.foto} alt={p.nome} className="w-6 h-6 rounded-full object-cover" />
-                          ) : (
-                            <PawPrint className="w-4 h-4" />
-                          )}
-                          {p.nome}
-                          <span className={cn("text-xs", active ? "opacity-80" : "text-muted-foreground")}>{p.raca}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {petsDoCliente(formE.clienteId).map((p) => {
+                    const active = formE.petId === p.id;
+                    return (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => setFormE({ ...formE, petId: active ? "" : p.id })}
+                        className={cn(
+                          "flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm transition-colors",
+                          active ? "bg-primary text-primary-foreground border-primary" : "bg-background hover:bg-muted",
+                        )}
+                      >
+                        {p.foto ? (
+                          <img src={p.foto} alt={p.nome} className="w-6 h-6 rounded-full object-cover" />
+                        ) : (
+                          <PawPrint className="w-4 h-4" />
+                        )}
+                        {p.nome}
+                        <span className={cn("text-xs", active ? "opacity-80" : "text-muted-foreground")}>{p.raca}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             )}
 
-            {/* Serviço */}
+            {/* Status calculado (preview) */}
             <div className="col-span-2">
-              <Label>Serviço realizado</Label>
-              <Select onValueChange={onPickServico}>
-                <SelectTrigger><SelectValue placeholder="Selecione um serviço (preenche descrição e valor)" /></SelectTrigger>
-                <SelectContent>
-                  {servicos.map((s) => (
-                    <SelectItem key={s.id} value={s.id}>
-                      {s.nome}{s.valor > 0 ? ` — ${fmtBRL(s.valor)}` : ""}
-                    </SelectItem>
-                  ))}
-                  {servicos.length === 0 && <SelectItem value="_" disabled>Cadastre serviços no Plano de Contas</SelectItem>}
-                </SelectContent>
-              </Select>
+              <Label>Status</Label>
+              <div className="mt-1">
+                <Badge variant="outline" className={statusBadgeClass(calcStatus(formE))}>
+                  {calcStatus(formE)}
+                </Badge>
+                <span className="text-xs text-muted-foreground ml-2">calculado automaticamente</span>
+              </div>
             </div>
 
-            <div className="col-span-2"><Label>Descrição</Label><Input value={formE.descricao} onChange={(e) => setFormE({ ...formE, descricao: e.target.value })} /></div>
-
-            <div><Label>Valor cobrado (R$)</Label><Input type="number" step="0.01" value={formE.valor} onChange={(e) => setFormE({ ...formE, valor: parseFloat(e.target.value) || 0 })} /></div>
-            <div>
-              <Label>Categoria</Label>
-              <Select value={formE.categoria} onValueChange={(v: any) => setFormE({ ...formE, categoria: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{CAT_E.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label>Forma de pagamento</Label>
-              <Select value={formE.formaPagamento} onValueChange={(v: any) => setFormE({ ...formE, formaPagamento: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{FP.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Conta bancária {formE.formaPagamento === "Permuta" && <span className="text-xs text-muted-foreground">(Permuta → Caixa da Loja)</span>}</Label>
-              <Select
-                value={formE.formaPagamento === "Permuta" ? caixaLojaId : (formE.contaBancariaId || "")}
-                onValueChange={(v) => setFormE({ ...formE, contaBancariaId: v })}
-                disabled={formE.formaPagamento === "Permuta"}
-              >
-                <SelectTrigger><SelectValue placeholder="Selecione a conta" /></SelectTrigger>
-                <SelectContent>
-                  {bancos.map((b) => <SelectItem key={b.id} value={b.id}>{b.nome}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-
+            {/* Observações */}
             <div className="col-span-2">
               <Label>Observações</Label>
               <Textarea
                 rows={2}
                 value={formE.observacoes || ""}
                 onChange={(e) => setFormE({ ...formE, observacoes: e.target.value })}
-                placeholder="Anotações sobre o atendimento…"
+                placeholder="Anotações sobre o lançamento…"
               />
             </div>
           </div>
