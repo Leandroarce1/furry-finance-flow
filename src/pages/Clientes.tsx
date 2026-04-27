@@ -13,7 +13,7 @@ import {
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Plus, Search, PawPrint, Pencil, Trash2, ArrowLeft, Phone, MapPin, ScrollText } from "lucide-react";
+import { Plus, Search, PawPrint, Pencil, Trash2, ArrowLeft, Phone, MapPin, ScrollText, MessageCircle } from "lucide-react";
 import { useClientes, useEntradas, usePets } from "@/store/useStore";
 import type { Cliente, Pet } from "@/lib/types";
 import { fmtBRL, fmtDate, uid } from "@/lib/format";
