@@ -382,36 +382,170 @@ export default function Financeiro() {
         </TabsContent>
 
         <TabsContent value="saidas">
-          <div className="flex justify-end mb-3"><Button onClick={openNewS}><Plus className="w-4 h-4 mr-1" />Nova Saída</Button></div>
+          <div className="flex flex-wrap items-end gap-2 justify-between mb-3">
+            <div className="flex flex-wrap gap-2">
+              <div>
+                <Label className="text-xs text-muted-foreground">Status</Label>
+                <Select value={filtroStatusS} onValueChange={setFiltroStatusS}>
+                  <SelectTrigger className="w-[180px]"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todos os status</SelectItem>
+                    <SelectItem value="Concluído">Concluído</SelectItem>
+                    <SelectItem value="Previsto para hoje">Previsto para hoje</SelectItem>
+                    <SelectItem value="Previsto">Previsto</SelectItem>
+                    <SelectItem value="Atrasado">Atrasado</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Conta bancária</Label>
+                <Select value={filtroContaS} onValueChange={setFiltroContaS}>
+                  <SelectTrigger className="w-[200px]"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todas">Todas as contas</SelectItem>
+                    {bancos.map((b) => <SelectItem key={b.id} value={b.id}>{b.nome}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <Button onClick={openNewS}><Plus className="w-4 h-4 mr-1" />Nova Saída</Button>
+          </div>
           <Card>
             <CardContent className="p-0 overflow-x-auto">
               <Table>
                 <TableHeader><TableRow>
-                  <TableHead>Data</TableHead><TableHead>Descrição</TableHead><TableHead>Categoria</TableHead>
-                  <TableHead>Banco</TableHead><TableHead>Pagamento</TableHead><TableHead>Status</TableHead>
-                  <TableHead className="text-right">Valor</TableHead><TableHead></TableHead>
+                  <TableHead>Data</TableHead>
+                  <TableHead>Categoria</TableHead>
+                  <TableHead>Subcategoria</TableHead>
+                  <TableHead>Fornecedor</TableHead>
+                  <TableHead className="text-right">Valor</TableHead>
+                  <TableHead>Conta</TableHead>
+                  <TableHead>Forma Pgto</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead></TableHead>
                 </TableRow></TableHeader>
                 <TableBody>
-                  {filtroSaidas.map((s) => (
-                    <TableRow key={s.id}>
-                      <TableCell>{fmtDate(s.data)}</TableCell>
-                      <TableCell className="font-medium">{s.descricao}</TableCell>
-                      <TableCell><Badge variant="secondary">{s.categoria}</Badge></TableCell>
-                      <TableCell className="text-sm">{bancoNome(s.contaBancariaId)}</TableCell>
-                      <TableCell className="text-sm">{s.formaPagamento}</TableCell>
-                      <TableCell><Badge variant={s.status === "Pago" ? "default" : "outline"}>{s.status}</Badge></TableCell>
-                      <TableCell className="text-right font-medium text-destructive">{fmtBRL(s.valor)}</TableCell>
-                      <TableCell className="text-right">
-                        <Button size="icon" variant="ghost" onClick={() => openEditS(s)}><Pencil className="w-4 h-4" /></Button>
-                        <DeleteBtn onConfirm={() => delS(s.id)} />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                  {filtroSaidas.length === 0 && <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-8">Sem registros no período.</TableCell></TableRow>}
+                  {filtroSaidas.map((s) => {
+                    const st = calcStatus(s);
+                    const cat = planoContas.find((p) => p.id === s.planoContaId)?.nome || s.categoria || "—";
+                    return (
+                      <TableRow key={s.id}>
+                        <TableCell className="whitespace-nowrap">{fmtDate(refDate(s))}</TableCell>
+                        <TableCell><Badge variant="secondary">{cat}</Badge></TableCell>
+                        <TableCell className="font-medium">{s.subcategoria || s.descricao}</TableCell>
+                        <TableCell className="text-sm">{s.fornecedor || "—"}</TableCell>
+                        <TableCell className="text-right font-medium text-destructive">{fmtBRL(s.valor)}</TableCell>
+                        <TableCell className="text-sm">{bancoNome(s.contaBancariaId)}</TableCell>
+                        <TableCell className="text-sm">{s.formaPagamento}</TableCell>
+                        <TableCell><Badge variant="outline" className={statusBadgeClass(st)}>{st}</Badge></TableCell>
+                        <TableCell className="text-right">
+                          <Button size="icon" variant="ghost" onClick={() => openEditS(s)}><Pencil className="w-4 h-4" /></Button>
+                          <DeleteBtn onConfirm={() => delS(s.id)} />
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                  {filtroSaidas.length === 0 && <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-8">Sem registros no período.</TableCell></TableRow>}
                 </TableBody>
               </Table>
               <div className="flex justify-end px-4 py-3 border-t bg-muted/30">
                 <span className="text-sm">Total: <strong className="text-destructive">{fmtBRL(totalS)}</strong></span>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="lancamentos">
+          <div className="flex flex-wrap items-end gap-2 justify-between mb-3">
+            <div className="flex flex-wrap gap-2">
+              <div>
+                <Label className="text-xs text-muted-foreground">Tipo</Label>
+                <Select value={filtroTipoLanc} onValueChange={(v: any) => setFiltroTipoLanc(v)}>
+                  <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todos</SelectItem>
+                    <SelectItem value="entrada">Entradas</SelectItem>
+                    <SelectItem value="saida">Saídas</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Conta bancária</Label>
+                <Select value={filtroConta} onValueChange={setFiltroConta}>
+                  <SelectTrigger className="w-[200px]"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todas">Todas as contas</SelectItem>
+                    {bancos.map((b) => <SelectItem key={b.id} value={b.id}>{b.nome}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={openNewS}><Plus className="w-4 h-4 mr-1" />Saída</Button>
+              <Button onClick={openNewE}><Plus className="w-4 h-4 mr-1" />Entrada</Button>
+            </div>
+          </div>
+          <Card>
+            <CardContent className="p-0 overflow-x-auto">
+              <Table>
+                <TableHeader><TableRow>
+                  <TableHead>Data</TableHead>
+                  <TableHead>Tipo</TableHead>
+                  <TableHead>Categoria</TableHead>
+                  <TableHead>Subcategoria</TableHead>
+                  <TableHead>Cliente / Fornecedor</TableHead>
+                  <TableHead className="text-right">Valor</TableHead>
+                  <TableHead>Conta</TableHead>
+                  <TableHead>Forma Pgto</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow></TableHeader>
+                <TableBody>
+                  {(() => {
+                    type Row = { id: string; tipo: "entrada" | "saida"; data: string; cat: string; sub: string; party: string; valor: number; conta: string; fp: string; st: StatusCalc };
+                    const rows: Row[] = [];
+                    if (filtroTipoLanc !== "saida") {
+                      filtroEntradas.forEach((e) => {
+                        const cat = planoContas.find((p) => p.id === e.planoContaId)?.nome || "—";
+                        const cli = clientes.find((c) => c.id === e.clienteId)?.nome || "—";
+                        rows.push({ id: "e-" + e.id, tipo: "entrada", data: refDate(e), cat, sub: e.subcategoria || e.descricao, party: cli, valor: e.valor, conta: bancoNome(e.contaBancariaId), fp: e.formaPagamento, st: calcStatus(e) });
+                      });
+                    }
+                    if (filtroTipoLanc !== "entrada") {
+                      filtroSaidas.forEach((s) => {
+                        const cat = planoContas.find((p) => p.id === s.planoContaId)?.nome || s.categoria || "—";
+                        rows.push({ id: "s-" + s.id, tipo: "saida", data: refDate(s), cat, sub: s.subcategoria || s.descricao, party: s.fornecedor || "—", valor: s.valor, conta: bancoNome(s.contaBancariaId), fp: s.formaPagamento, st: calcStatus(s) });
+                      });
+                    }
+                    rows.sort((a, b) => b.data.localeCompare(a.data));
+                    if (rows.length === 0) {
+                      return <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-8">Sem lançamentos no período.</TableCell></TableRow>;
+                    }
+                    return rows.map((r) => (
+                      <TableRow key={r.id}>
+                        <TableCell className="whitespace-nowrap">{fmtDate(r.data)}</TableCell>
+                        <TableCell>
+                          {r.tipo === "entrada"
+                            ? <Badge className="bg-success/15 text-success border-success/30 hover:bg-success/15" variant="outline"><ArrowUpCircle className="w-3 h-3 mr-1" />Entrada</Badge>
+                            : <Badge className="bg-destructive/15 text-destructive border-destructive/30 hover:bg-destructive/15" variant="outline"><ArrowDownCircle className="w-3 h-3 mr-1" />Saída</Badge>}
+                        </TableCell>
+                        <TableCell><Badge variant="secondary">{r.cat}</Badge></TableCell>
+                        <TableCell className="font-medium">{r.sub}</TableCell>
+                        <TableCell className="text-sm">{r.party}</TableCell>
+                        <TableCell className={cn("text-right font-medium", r.tipo === "entrada" ? "text-success" : "text-destructive")}>
+                          {r.tipo === "entrada" ? "+" : "−"} {fmtBRL(r.valor)}
+                        </TableCell>
+                        <TableCell className="text-sm">{r.conta}</TableCell>
+                        <TableCell className="text-sm">{r.fp}</TableCell>
+                        <TableCell><Badge variant="outline" className={statusBadgeClass(r.st)}>{r.st}</Badge></TableCell>
+                      </TableRow>
+                    ));
+                  })()}
+                </TableBody>
+              </Table>
+              <div className="flex justify-end gap-4 px-4 py-3 border-t bg-muted/30 text-sm">
+                <span>Entradas: <strong className="text-success">{fmtBRL(totalE)}</strong></span>
+                <span>Saídas: <strong className="text-destructive">{fmtBRL(totalS)}</strong></span>
+                <span>Saldo: <strong className={lucro >= 0 ? "text-success" : "text-destructive"}>{fmtBRL(lucro)}</strong></span>
               </div>
             </CardContent>
           </Card>
