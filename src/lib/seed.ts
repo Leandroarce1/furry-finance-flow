@@ -52,7 +52,7 @@ export const seedPlanoContas: PlanoConta[] = [
     { nome: "Banho e Tosa Porte Médio", valor: 90 },
     { nome: "Banho e Tosa Porte Grande", valor: 110 },
     { nome: "Banho e Tosa Bebê", valor: 40 },
-    { nome: "Banho e Tosa Higiênica + Desembolo", valor: 80 },
+    { nome: "Banho e Tosa Higiênica + Desembolso", valor: 80 },
   ] },
   { id: "pc-r2", tipo: "Receita", nome: "Serviços II", subcategorias: [
     { nome: "Corte de Unha", valor: 15 },
