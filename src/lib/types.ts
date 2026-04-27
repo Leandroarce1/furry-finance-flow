@@ -36,7 +36,7 @@ export type StatusSaida = "Pago" | "A Pagar";
 
 export interface Entrada {
   id: string;
-  data: string; // ISO yyyy-mm-dd
+  data: string; // ISO yyyy-mm-dd — data do atendimento (legado / fallback)
   descricao: string;
   categoria: CategoriaEntrada;
   valor: number;
@@ -46,6 +46,9 @@ export interface Entrada {
   status: StatusEntrada;
   contaBancariaId?: string;
   planoContaId?: string;
+  subcategoria?: string;
+  dataVencimento?: string;
+  dataPagamento?: string;
   observacoes?: string;
 }
 
