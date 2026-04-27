@@ -56,7 +56,7 @@ export function AppSidebar() {
   const [settings] = useSettings();
 
   return (
-    <Sidebar collapsible="offcanvas" className="border-r">
+    <Sidebar collapsible="icon" className="border-r">
       <SidebarContent className="bg-sidebar">
         <div className="px-4 py-5 flex items-center gap-3 border-b border-sidebar-border">
           <div className="w-9 h-9 rounded-xl bg-gradient-primary flex items-center justify-center shadow-elegant shrink-0">
