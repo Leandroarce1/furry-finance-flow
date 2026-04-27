@@ -58,32 +58,69 @@ export default function Dashboard() {
   const [planoContas] = usePlanoContas();
   const [clientes] = useClientes();
   const [pets] = usePets();
+  const [metas] = useMetas();
 
   const now = new Date();
-  const ano = now.getFullYear();
-  const currentMonth = `${ano}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const defaultYM = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const [selectedYM, setSelectedYM] = useState<string>(defaultYM);
+  const [ano, mes] = selectedYM.split("-").map(Number);
 
-  // KPIs do mês
+  // Anos disponíveis para o seletor (inclui ano atual e anos presentes nos lançamentos)
+  const anosDisponiveis = useMemo(() => {
+    const set = new Set<number>([now.getFullYear(), 2026]);
+    [...entradas, ...saidas].forEach((l: any) => {
+      if (l.data) set.add(Number(l.data.slice(0, 4)));
+      if (l.dataPagamento) set.add(Number(l.dataPagamento.slice(0, 4)));
+    });
+    return Array.from(set).sort();
+  }, [entradas, saidas]);
+
+  // Helpers: concluído e mês de competência (usa dataPagamento se existir)
+  const isConcluido = (l: any) => !!l.dataPagamento;
+  const mesDe = (l: any) => monthKey(l.dataPagamento || l.data || "");
+
+  // KPIs do mês selecionado (realizado = status Concluído)
   const stats = useMemo(() => {
-    const ents = entradas.filter((e) => monthKey(e.data) === currentMonth);
-    const sais = saidas.filter((s) => monthKey(s.data) === currentMonth);
+    const ents = entradas.filter((e) => mesDe(e) === selectedYM && isConcluido(e));
+    const sais = saidas.filter((s) => mesDe(s) === selectedYM && isConcluido(s));
     const totalE = ents.reduce((a, b) => a + b.valor, 0);
     const totalS = sais.reduce((a, b) => a + b.valor, 0);
-    return { totalE, totalS, lucro: totalE - totalS, atendimentos: ents.length };
-  }, [entradas, saidas, currentMonth]);
+    // Atendimentos: contagem total de lançamentos de entrada no mês (por data do lançamento)
+    const atendimentos = entradas.filter((e) => monthKey(e.data) === selectedYM).length;
+    return { totalE, totalS, lucro: totalE - totalS, atendimentos };
+  }, [entradas, saidas, selectedYM]);
 
-  // Série mensal do ano (barras + linha acumulada)
+  // Série mensal do ano selecionado (realizado = concluídos)
   const serieMensal = useMemo(() => {
     let acc = 0;
     return MESES_LABEL.map((label, i) => {
       const mk = `${ano}-${String(i + 1).padStart(2, "0")}`;
-      const ent = entradas.filter((e) => monthKey(e.data) === mk).reduce((a, x) => a + x.valor, 0);
-      const sai = saidas.filter((s) => monthKey(s.data) === mk).reduce((a, x) => a + x.valor, 0);
+      const ent = entradas.filter((e) => mesDe(e) === mk && isConcluido(e)).reduce((a, x) => a + x.valor, 0);
+      const sai = saidas.filter((s) => mesDe(s) === mk && isConcluido(s)).reduce((a, x) => a + x.valor, 0);
       const resultado = ent - sai;
       acc += resultado;
       return { mes: label, Receita: ent, Despesa: sai, Acumulado: acc };
     });
   }, [entradas, saidas, ano]);
+
+  // Meta vs Realizado — categorias com meta no ano
+  const metaVsReal = useMemo(() => {
+    const idxMes = mes - 1;
+    return metas
+      .filter((m) => m.ano === ano)
+      .map((m) => {
+        const pc = planoContas.find((p) => p.id === m.planoContaId);
+        if (!pc) return null;
+        const meta = m.valores[idxMes] || 0;
+        const lancs = pc.tipo === "Receita" ? entradas : saidas;
+        const realizado = (lancs as any[])
+          .filter((l) => l.planoContaId === m.planoContaId && mesDe(l) === selectedYM && isConcluido(l))
+          .reduce((a, b) => a + b.valor, 0);
+        const pct = meta > 0 ? Math.min(100, (realizado / meta) * 100) : 0;
+        return { id: m.id, nome: pc.nome, tipo: pc.tipo, meta, realizado, pct };
+      })
+      .filter(Boolean) as Array<{ id: string; nome: string; tipo: string; meta: number; realizado: number; pct: number }>;
+  }, [metas, planoContas, entradas, saidas, ano, mes, selectedYM]);
 
   // Pizza por categoria do plano de contas (mês atual, receitas)
   const pizzaCategorias = useMemo(() => {
