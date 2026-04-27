@@ -248,7 +248,7 @@ export default function Dashboard() {
     else { setSortKey(k); setSortDir(k === "nome" ? "asc" : "desc"); }
   }
 
-  const monthLabel = now.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+  const monthLabel = new Date(ano, mes - 1, 1).toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
   const semDados = entradas.length === 0 && saidas.length === 0;
 
   return (
