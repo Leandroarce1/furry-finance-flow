@@ -194,9 +194,13 @@ export default function Clientes() {
                               <p className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Histórico de atendimentos</p>
                               <div className="space-y-1">
                                 {historico.map((h) => (
-                                  <div key={h.id} className="flex justify-between text-xs">
-                                    <span>{fmtDate(h.data)} — {h.descricao} <Badge variant="outline" className="ml-1 text-[10px]">{h.categoria}</Badge></span>
-                                    <span className="font-medium">{fmtBRL(h.valor)}</span>
+                                  <div key={h.id} className="flex justify-between text-xs gap-2">
+                                    <span className="flex-1">
+                                      {fmtDate(h.data)} — {h.descricao}
+                                      <Badge variant="outline" className="ml-1 text-[10px]">{h.categoria}</Badge>
+                                      {h.observacoes && <span className="block text-muted-foreground italic mt-0.5">📝 {h.observacoes}</span>}
+                                    </span>
+                                    <span className="font-medium whitespace-nowrap">{fmtBRL(h.valor)}</span>
                                   </div>
                                 ))}
                               </div>
