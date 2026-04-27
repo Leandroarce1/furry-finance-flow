@@ -64,6 +64,8 @@ export default function Financeiro() {
   const [filtroMes, setFiltroMes] = useState(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`);
   const [anoAnual, setAnoAnual] = useState<number>(now.getFullYear());
 
+  const [searchParams, setSearchParams] = useSearchParams();
+
   const [openE, setOpenE] = useState(false);
   const [editE, setEditE] = useState<Entrada | null>(null);
   const [formE, setFormE] = useState<Omit<Entrada, "id">>(emptyE);
