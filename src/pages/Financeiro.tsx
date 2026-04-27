@@ -350,7 +350,7 @@ export default function Financeiro() {
                 </Select>
               </div>
             </div>
-            <Button onClick={openNewE}><Plus className="w-4 h-4 mr-1" />Nova Entrada</Button>
+            <Button onClick={() => openNewE()}><Plus className="w-4 h-4 mr-1" />Nova Entrada</Button>
           </div>
           <Card>
             <CardContent className="p-0 overflow-x-auto">
@@ -499,7 +499,7 @@ export default function Financeiro() {
             </div>
             <div className="flex gap-2">
               <Button variant="outline" onClick={openNewS}><Plus className="w-4 h-4 mr-1" />Saída</Button>
-              <Button onClick={openNewE}><Plus className="w-4 h-4 mr-1" />Entrada</Button>
+              <Button onClick={() => openNewE()}><Plus className="w-4 h-4 mr-1" />Entrada</Button>
             </div>
           </div>
           <Card>
