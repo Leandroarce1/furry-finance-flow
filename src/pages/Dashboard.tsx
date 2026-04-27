@@ -125,18 +125,18 @@ export default function Dashboard() {
   // Pizza por categoria do plano de contas (mês atual, receitas)
   const pizzaCategorias = useMemo(() => {
     const map = new Map<string, number>();
-    entradas.filter((e) => monthKey(e.data) === currentMonth).forEach((e) => {
+    entradas.filter((e) => monthKey(e.data) === selectedYM).forEach((e) => {
       const pc = planoContas.find((p) => p.id === e.planoContaId);
       const nome = pc?.nome || e.categoria || "Sem categoria";
       map.set(nome, (map.get(nome) || 0) + e.valor);
     });
     return Array.from(map.entries()).map(([name, value]) => ({ name, value }));
-  }, [entradas, planoContas, currentMonth]);
+  }, [entradas, planoContas, selectedYM]);
 
   // Top serviços (descrição) — mês atual
   const topServicos = useMemo(() => {
     const map = new Map<string, { qtd: number; total: number }>();
-    entradas.filter((e) => monthKey(e.data) === currentMonth).forEach((e) => {
+    entradas.filter((e) => monthKey(e.data) === selectedYM).forEach((e) => {
       const k = e.descricao || "—";
       const cur = map.get(k) || { qtd: 0, total: 0 };
       cur.qtd += 1; cur.total += e.valor;
@@ -146,7 +146,7 @@ export default function Dashboard() {
       .map(([nome, v]) => ({ nome, ...v }))
       .sort((a, b) => b.total - a.total)
       .slice(0, 5);
-  }, [entradas, currentMonth]);
+  }, [entradas, selectedYM]);
 
   // === Análises de clientes ===
   const trintaDiasAtras = useMemo(() => {
@@ -180,7 +180,7 @@ export default function Dashboard() {
       if (!prev || e.data > prev) ultimoPorCliente.set(cid, e.data);
       totalPorCliente.set(cid, (totalPorCliente.get(cid) || 0) + e.valor);
       if (e.data >= trintaDiasAtras) ativosSet.add(cid);
-      if (monthKey(e.data) === currentMonth) {
+      if (monthKey(e.data) === selectedYM) {
         qtdMesPorCliente.set(cid, (qtdMesPorCliente.get(cid) || 0) + 1);
         totalMesPorCliente.set(cid, (totalMesPorCliente.get(cid) || 0) + e.valor);
       }
@@ -213,12 +213,12 @@ export default function Dashboard() {
       .filter((r) => r.atendimentosMes > 0 || r.totalMes > 0);
 
     return { ativos, semRetorno, ticketMedio, topMes, ranking };
-  }, [entradas, clientes, currentMonth, trintaDiasAtras, petClienteMap]);
+  }, [entradas, clientes, selectedYM, trintaDiasAtras, petClienteMap]);
 
   // Serviços mais realizados (mês) — para gráfico de barras
   const servicosMes = useMemo(() => {
     const map = new Map<string, number>();
-    entradas.filter((e) => monthKey(e.data) === currentMonth).forEach((e) => {
+    entradas.filter((e) => monthKey(e.data) === selectedYM).forEach((e) => {
       const k = e.descricao || "—";
       map.set(k, (map.get(k) || 0) + 1);
     });
@@ -226,7 +226,7 @@ export default function Dashboard() {
       .map(([nome, qtd]) => ({ nome, qtd }))
       .sort((a, b) => b.qtd - a.qtd)
       .slice(0, 8);
-  }, [entradas, currentMonth]);
+  }, [entradas, selectedYM]);
 
   // Ordenação do ranking
   type SortKey = "nome" | "atendimentosMes" | "totalMes" | "ultimaVisita";
