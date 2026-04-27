@@ -62,7 +62,12 @@ export interface Saida {
   status: StatusSaida;
   contaBancariaId?: string;
   fornecedorId?: string;
+  fornecedor?: string;
   planoContaId?: string;
+  subcategoria?: string;
+  dataVencimento?: string;
+  dataPagamento?: string;
+  observacoes?: string;
 }
 
 export interface Settings {
