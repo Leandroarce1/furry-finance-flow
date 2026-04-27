@@ -49,7 +49,7 @@ function statusBadgeClass(s: StatusCalc): string {
     default: return "bg-muted text-muted-foreground border-border";
   }
 }
-const emptyS: Omit<Saida, "id"> = { data: todayISO(), descricao: "", categoria: "Produtos", valor: 0, formaPagamento: "Pix", status: "Pago", contaBancariaId: "" };
+const emptyS: Omit<Saida, "id"> = { data: todayISO(), descricao: "", categoria: "Produtos", valor: 0, formaPagamento: "Pix", status: "A Pagar", contaBancariaId: "", subcategoria: "", planoContaId: "", fornecedor: "", dataVencimento: todayISO(), dataPagamento: "", observacoes: "" };
 
 export default function Financeiro() {
   const [entradas, setEntradas] = useEntradas();
