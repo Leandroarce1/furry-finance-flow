@@ -46,6 +46,7 @@ export interface Entrada {
   status: StatusEntrada;
   contaBancariaId?: string;
   planoContaId?: string;
+  observacoes?: string;
 }
 
 export interface Saida {
