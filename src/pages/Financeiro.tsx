@@ -5,8 +5,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
@@ -14,17 +17,18 @@ import {
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, ArrowDownCircle, ArrowUpCircle, Wallet } from "lucide-react";
+import { Plus, Pencil, Trash2, ArrowDownCircle, ArrowUpCircle, Wallet, Check, ChevronsUpDown, PawPrint } from "lucide-react";
 import { useBancos, useClientes, useEntradas, usePets, usePlanoContas, useSaidas } from "@/store/useStore";
 import type { CategoriaEntrada, CategoriaSaida, Entrada, FormaPagamento, Saida } from "@/lib/types";
 import { fmtBRL, fmtDate, monthKey, todayISO, uid } from "@/lib/format";
+import { cn } from "@/lib/utils";
 
 const CAT_E: CategoriaEntrada[] = ["Banho", "Tosa", "Banho+Tosa", "Hidratação", "Outros"];
 const CAT_S: CategoriaSaida[] = ["Produtos", "Energia", "Aluguel", "Manutenção", "Outros"];
 const FP: FormaPagamento[] = ["Dinheiro", "Pix", "Cartão Débito", "Cartão Crédito", "Permuta"];
 const MESES_LABEL = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 
-const emptyE: Omit<Entrada, "id"> = { data: todayISO(), descricao: "", categoria: "Banho", valor: 0, formaPagamento: "Pix", clienteId: "", petId: "", status: "Pago", contaBancariaId: "" };
+const emptyE: Omit<Entrada, "id"> = { data: todayISO(), descricao: "", categoria: "Banho", valor: 0, formaPagamento: "Pix", clienteId: "", petId: "", status: "Pago", contaBancariaId: "", observacoes: "" };
 const emptyS: Omit<Saida, "id"> = { data: todayISO(), descricao: "", categoria: "Produtos", valor: 0, formaPagamento: "Pix", status: "Pago", contaBancariaId: "" };
 
 export default function Financeiro() {
@@ -42,6 +46,7 @@ export default function Financeiro() {
   const [openE, setOpenE] = useState(false);
   const [editE, setEditE] = useState<Entrada | null>(null);
   const [formE, setFormE] = useState<Omit<Entrada, "id">>(emptyE);
+  const [clientePopOpen, setClientePopOpen] = useState(false);
 
   const [openS, setOpenS] = useState(false);
   const [editS, setEditS] = useState<Saida | null>(null);
@@ -327,14 +332,99 @@ export default function Financeiro() {
       <Dialog open={openE} onOpenChange={setOpenE}>
         <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>{editE ? "Editar" : "Nova"} entrada</DialogTitle></DialogHeader>
-          <div className="grid grid-cols-2 gap-3">
-            <div><Label>Data</Label><Input type="date" value={formE.data} onChange={(e) => setFormE({ ...formE, data: e.target.value })} /></div>
-            <div><Label>Valor (R$)</Label><Input type="number" step="0.01" value={formE.valor} onChange={(e) => setFormE({ ...formE, valor: parseFloat(e.target.value) || 0 })} /></div>
+          <div className="grid grid-cols-2 gap-3 max-h-[70vh] overflow-y-auto pr-1">
+            <div><Label>Data do atendimento</Label><Input type="date" value={formE.data} onChange={(e) => setFormE({ ...formE, data: e.target.value })} /></div>
+            <div>
+              <Label>Status</Label>
+              <Select value={formE.status} onValueChange={(v: any) => setFormE({ ...formE, status: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent><SelectItem value="Pago">Pago</SelectItem><SelectItem value="A Receber">A Receber</SelectItem></SelectContent>
+              </Select>
+            </div>
 
+            {/* Cliente com autocomplete */}
             <div className="col-span-2">
-              <Label>Serviço cadastrado</Label>
+              <Label>Cliente</Label>
+              <Popover open={clientePopOpen} onOpenChange={setClientePopOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" role="combobox" className="w-full justify-between font-normal">
+                    {formE.clienteId
+                      ? clientes.find((c) => c.id === formE.clienteId)?.nome || "Selecione…"
+                      : "Buscar cliente por nome…"}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50 shrink-0" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder="Digite o nome…" />
+                    <CommandList>
+                      <CommandEmpty>Nenhum cliente.</CommandEmpty>
+                      <CommandGroup>
+                        <CommandItem
+                          value="__none__"
+                          onSelect={() => { setFormE({ ...formE, clienteId: "", petId: "" }); setClientePopOpen(false); }}
+                        >
+                          <Check className={cn("mr-2 h-4 w-4", !formE.clienteId ? "opacity-100" : "opacity-0")} />
+                          — Nenhum —
+                        </CommandItem>
+                        {clientes.map((c) => (
+                          <CommandItem
+                            key={c.id}
+                            value={c.nome}
+                            onSelect={() => { setFormE({ ...formE, clienteId: c.id, petId: "" }); setClientePopOpen(false); }}
+                          >
+                            <Check className={cn("mr-2 h-4 w-4", formE.clienteId === c.id ? "opacity-100" : "opacity-0")} />
+                            <span className="flex-1">{c.nome}</span>
+                            {c.whatsapp && <span className="text-xs text-muted-foreground ml-2">{c.whatsapp}</span>}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            {/* Pets do cliente */}
+            {formE.clienteId && (
+              <div className="col-span-2">
+                <Label>Pet atendido</Label>
+                {petsDoCliente(formE.clienteId).length === 0 ? (
+                  <p className="text-xs text-muted-foreground py-2">Este cliente não possui pets cadastrados.</p>
+                ) : (
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {petsDoCliente(formE.clienteId).map((p) => {
+                      const active = formE.petId === p.id;
+                      return (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => setFormE({ ...formE, petId: active ? "" : p.id })}
+                          className={cn(
+                            "flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm transition-colors",
+                            active ? "bg-primary text-primary-foreground border-primary" : "bg-background hover:bg-muted",
+                          )}
+                        >
+                          {p.foto ? (
+                            <img src={p.foto} alt={p.nome} className="w-6 h-6 rounded-full object-cover" />
+                          ) : (
+                            <PawPrint className="w-4 h-4" />
+                          )}
+                          {p.nome}
+                          <span className={cn("text-xs", active ? "opacity-80" : "text-muted-foreground")}>{p.raca}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Serviço */}
+            <div className="col-span-2">
+              <Label>Serviço realizado</Label>
               <Select onValueChange={onPickServico}>
-                <SelectTrigger><SelectValue placeholder="Selecione um serviço para preencher descrição e valor" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder="Selecione um serviço (preenche descrição e valor)" /></SelectTrigger>
                 <SelectContent>
                   {servicos.map((s) => (
                     <SelectItem key={s.id} value={s.id}>
@@ -347,6 +437,8 @@ export default function Financeiro() {
             </div>
 
             <div className="col-span-2"><Label>Descrição</Label><Input value={formE.descricao} onChange={(e) => setFormE({ ...formE, descricao: e.target.value })} /></div>
+
+            <div><Label>Valor cobrado (R$)</Label><Input type="number" step="0.01" value={formE.valor} onChange={(e) => setFormE({ ...formE, valor: parseFloat(e.target.value) || 0 })} /></div>
             <div>
               <Label>Categoria</Label>
               <Select value={formE.categoria} onValueChange={(v: any) => setFormE({ ...formE, categoria: v })}>
@@ -354,52 +446,36 @@ export default function Financeiro() {
                 <SelectContent>{CAT_E.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
               </Select>
             </div>
+
             <div>
-              <Label>Pagamento</Label>
+              <Label>Forma de pagamento</Label>
               <Select value={formE.formaPagamento} onValueChange={(v: any) => setFormE({ ...formE, formaPagamento: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>{FP.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
               </Select>
             </div>
-            <div className="col-span-2">
-              <Label>Banco que vai receber {formE.formaPagamento === "Permuta" && <span className="text-xs text-muted-foreground">(Permuta vai para o Caixa da Loja)</span>}</Label>
+            <div>
+              <Label>Conta bancária {formE.formaPagamento === "Permuta" && <span className="text-xs text-muted-foreground">(Permuta → Caixa da Loja)</span>}</Label>
               <Select
                 value={formE.formaPagamento === "Permuta" ? caixaLojaId : (formE.contaBancariaId || "")}
                 onValueChange={(v) => setFormE({ ...formE, contaBancariaId: v })}
                 disabled={formE.formaPagamento === "Permuta"}
               >
-                <SelectTrigger><SelectValue placeholder="Selecione o banco" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder="Selecione a conta" /></SelectTrigger>
                 <SelectContent>
                   {bancos.map((b) => <SelectItem key={b.id} value={b.id}>{b.nome}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
-            <div>
-              <Label>Cliente (opcional)</Label>
-              <Select value={formE.clienteId || "_"} onValueChange={(v) => setFormE({ ...formE, clienteId: v === "_" ? "" : v, petId: "" })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="_">— Nenhum —</SelectItem>
-                  {clientes.map((c) => <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Pet (opcional)</Label>
-              <Select value={formE.petId || "_"} onValueChange={(v) => setFormE({ ...formE, petId: v === "_" ? "" : v })} disabled={!formE.clienteId}>
-                <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="_">— Nenhum —</SelectItem>
-                  {petsDoCliente(formE.clienteId || "").map((p) => <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
+
             <div className="col-span-2">
-              <Label>Status</Label>
-              <Select value={formE.status} onValueChange={(v: any) => setFormE({ ...formE, status: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent><SelectItem value="Pago">Pago</SelectItem><SelectItem value="A Receber">A Receber</SelectItem></SelectContent>
-              </Select>
+              <Label>Observações</Label>
+              <Textarea
+                rows={2}
+                value={formE.observacoes || ""}
+                onChange={(e) => setFormE({ ...formE, observacoes: e.target.value })}
+                placeholder="Anotações sobre o atendimento…"
+              />
             </div>
           </div>
           <DialogFooter><Button variant="outline" onClick={() => setOpenE(false)}>Cancelar</Button><Button onClick={saveE}>Salvar</Button></DialogFooter>
