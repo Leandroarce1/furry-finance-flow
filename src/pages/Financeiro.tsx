@@ -82,8 +82,9 @@ export default function Financeiro() {
     [bancos],
   );
 
-  // Categorias de receita do plano de contas
+  // Categorias do plano de contas por tipo
   const categoriasReceita = useMemo(() => planoContas.filter((p) => p.tipo === "Receita"), [planoContas]);
+  const categoriasDespesa = useMemo(() => planoContas.filter((p) => p.tipo === "Despesa"), [planoContas]);
 
   // Lista de serviços (subcategorias do plano de contas tipo Receita)
   const servicos = useMemo(() => {
@@ -104,12 +105,17 @@ export default function Financeiro() {
     return arr;
   }, [planoContas]);
 
-  // Filtros adicionais da lista de entradas
+  // Filtros adicionais — entradas
   const [filtroStatus, setFiltroStatus] = useState<string>("todos");
   const [filtroConta, setFiltroConta] = useState<string>("todas");
+  // Filtros — saídas
+  const [filtroStatusS, setFiltroStatusS] = useState<string>("todos");
+  const [filtroContaS, setFiltroContaS] = useState<string>("todas");
+  // Filtro — lançamentos combinados
+  const [filtroTipoLanc, setFiltroTipoLanc] = useState<"todos" | "entrada" | "saida">("todos");
 
-  // Data de referência para listagem: vencimento se houver, senão data
-  const refDate = (e: Entrada) => e.dataVencimento || e.data;
+  // Data de referência: vencimento se houver, senão data
+  const refDate = (e: { dataVencimento?: string; data: string }) => e.dataVencimento || e.data;
 
   const filtroEntradas = useMemo(() => {
     return entradas
@@ -118,7 +124,13 @@ export default function Financeiro() {
       .filter((e) => filtroConta === "todas" ? true : e.contaBancariaId === filtroConta)
       .sort((a, b) => refDate(b).localeCompare(refDate(a)));
   }, [entradas, filtroMes, filtroStatus, filtroConta]);
-  const filtroSaidas = useMemo(() => saidas.filter((s) => monthKey(s.data) === filtroMes).sort((a, b) => b.data.localeCompare(a.data)), [saidas, filtroMes]);
+  const filtroSaidas = useMemo(() => {
+    return saidas
+      .filter((s) => monthKey(refDate(s)) === filtroMes)
+      .filter((s) => filtroStatusS === "todos" ? true : calcStatus(s) === filtroStatusS)
+      .filter((s) => filtroContaS === "todas" ? true : s.contaBancariaId === filtroContaS)
+      .sort((a, b) => refDate(b).localeCompare(refDate(a)));
+  }, [saidas, filtroMes, filtroStatusS, filtroContaS]);
 
   const totalE = filtroEntradas.reduce((a, b) => a + b.valor, 0);
   const totalS = filtroSaidas.reduce((a, b) => a + b.valor, 0);
