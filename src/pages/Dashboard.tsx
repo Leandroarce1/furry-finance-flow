@@ -4,11 +4,13 @@ import { AppLayout } from "@/components/AppLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
-  useEntradas, useSaidas, usePlanoContas, useClientes, usePets,
+  useEntradas, useSaidas, usePlanoContas, useClientes, usePets, useMetas,
 } from "@/store/useStore";
 import { fmtBRL, fmtDate, monthKey } from "@/lib/format";
-import { TrendingUp, TrendingDown, Wallet, Activity, Users, UserX, Crown, Receipt, ArrowUpDown } from "lucide-react";
+import { TrendingUp, TrendingDown, Wallet, Activity, Users, UserX, Crown, Receipt, ArrowUpDown, Target } from "lucide-react";
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid,
   LineChart, Line, PieChart, Pie, Cell, Legend,
