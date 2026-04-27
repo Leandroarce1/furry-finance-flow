@@ -271,32 +271,71 @@ export default function Financeiro() {
         </TabsContent>
 
         <TabsContent value="entradas">
-          <div className="flex justify-end mb-3"><Button onClick={openNewE}><Plus className="w-4 h-4 mr-1" />Nova Entrada</Button></div>
+          <div className="flex flex-wrap items-end gap-2 justify-between mb-3">
+            <div className="flex flex-wrap gap-2">
+              <div>
+                <Label className="text-xs text-muted-foreground">Status</Label>
+                <Select value={filtroStatus} onValueChange={setFiltroStatus}>
+                  <SelectTrigger className="w-[180px]"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todos os status</SelectItem>
+                    <SelectItem value="Concluído">Concluído</SelectItem>
+                    <SelectItem value="Previsto para hoje">Previsto para hoje</SelectItem>
+                    <SelectItem value="Previsto">Previsto</SelectItem>
+                    <SelectItem value="Atrasado">Atrasado</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Conta bancária</Label>
+                <Select value={filtroConta} onValueChange={setFiltroConta}>
+                  <SelectTrigger className="w-[200px]"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todas">Todas as contas</SelectItem>
+                    {bancos.map((b) => <SelectItem key={b.id} value={b.id}>{b.nome}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <Button onClick={openNewE}><Plus className="w-4 h-4 mr-1" />Nova Entrada</Button>
+          </div>
           <Card>
             <CardContent className="p-0 overflow-x-auto">
               <Table>
                 <TableHeader><TableRow>
-                  <TableHead>Data</TableHead><TableHead>Descrição</TableHead><TableHead>Categoria</TableHead>
-                  <TableHead>Banco</TableHead><TableHead>Pagamento</TableHead><TableHead>Status</TableHead>
-                  <TableHead className="text-right">Valor</TableHead><TableHead></TableHead>
+                  <TableHead>Data</TableHead>
+                  <TableHead>Categoria</TableHead>
+                  <TableHead>Subcategoria</TableHead>
+                  <TableHead>Cliente</TableHead>
+                  <TableHead className="text-right">Valor</TableHead>
+                  <TableHead>Conta</TableHead>
+                  <TableHead>Forma Pgto</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead></TableHead>
                 </TableRow></TableHeader>
                 <TableBody>
-                  {filtroEntradas.map((e) => (
-                    <TableRow key={e.id}>
-                      <TableCell>{fmtDate(e.data)}</TableCell>
-                      <TableCell className="font-medium">{e.descricao}</TableCell>
-                      <TableCell><Badge variant="secondary">{e.categoria}</Badge></TableCell>
-                      <TableCell className="text-sm">{bancoNome(e.contaBancariaId)}</TableCell>
-                      <TableCell className="text-sm">{e.formaPagamento}</TableCell>
-                      <TableCell><Badge variant={e.status === "Pago" ? "default" : "outline"}>{e.status}</Badge></TableCell>
-                      <TableCell className="text-right font-medium text-success">{fmtBRL(e.valor)}</TableCell>
-                      <TableCell className="text-right">
-                        <Button size="icon" variant="ghost" onClick={() => openEditE(e)}><Pencil className="w-4 h-4" /></Button>
-                        <DeleteBtn onConfirm={() => delE(e.id)} />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                  {filtroEntradas.length === 0 && <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-8">Sem registros no período.</TableCell></TableRow>}
+                  {filtroEntradas.map((e) => {
+                    const st = calcStatus(e);
+                    const cli = clientes.find((c) => c.id === e.clienteId);
+                    const cat = planoContas.find((p) => p.id === e.planoContaId)?.nome || "—";
+                    return (
+                      <TableRow key={e.id}>
+                        <TableCell className="whitespace-nowrap">{fmtDate(refDate(e))}</TableCell>
+                        <TableCell><Badge variant="secondary">{cat}</Badge></TableCell>
+                        <TableCell className="font-medium">{e.subcategoria || e.descricao}</TableCell>
+                        <TableCell className="text-sm">{cli?.nome || "—"}</TableCell>
+                        <TableCell className="text-right font-medium text-success">{fmtBRL(e.valor)}</TableCell>
+                        <TableCell className="text-sm">{bancoNome(e.contaBancariaId)}</TableCell>
+                        <TableCell className="text-sm">{e.formaPagamento}</TableCell>
+                        <TableCell><Badge variant="outline" className={statusBadgeClass(st)}>{st}</Badge></TableCell>
+                        <TableCell className="text-right">
+                          <Button size="icon" variant="ghost" onClick={() => openEditE(e)}><Pencil className="w-4 h-4" /></Button>
+                          <DeleteBtn onConfirm={() => delE(e.id)} />
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                  {filtroEntradas.length === 0 && <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-8">Sem registros no período.</TableCell></TableRow>}
                 </TableBody>
               </Table>
               <div className="flex justify-end px-4 py-3 border-t bg-muted/30">
