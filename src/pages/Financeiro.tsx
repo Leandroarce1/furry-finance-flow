@@ -49,7 +49,7 @@ function statusBadgeClass(s: StatusCalc): string {
     default: return "bg-muted text-muted-foreground border-border";
   }
 }
-const emptyS: Omit<Saida, "id"> = { data: todayISO(), descricao: "", categoria: "Produtos", valor: 0, formaPagamento: "Pix", status: "Pago", contaBancariaId: "" };
+const emptyS: Omit<Saida, "id"> = { data: todayISO(), descricao: "", categoria: "Produtos", valor: 0, formaPagamento: "Pix", status: "A Pagar", contaBancariaId: "", subcategoria: "", planoContaId: "", fornecedor: "", dataVencimento: todayISO(), dataPagamento: "", observacoes: "" };
 
 export default function Financeiro() {
   const [entradas, setEntradas] = useEntradas();
@@ -82,8 +82,9 @@ export default function Financeiro() {
     [bancos],
   );
 
-  // Categorias de receita do plano de contas
+  // Categorias do plano de contas por tipo
   const categoriasReceita = useMemo(() => planoContas.filter((p) => p.tipo === "Receita"), [planoContas]);
+  const categoriasDespesa = useMemo(() => planoContas.filter((p) => p.tipo === "Despesa"), [planoContas]);
 
   // Lista de serviços (subcategorias do plano de contas tipo Receita)
   const servicos = useMemo(() => {
@@ -104,12 +105,17 @@ export default function Financeiro() {
     return arr;
   }, [planoContas]);
 
-  // Filtros adicionais da lista de entradas
+  // Filtros adicionais — entradas
   const [filtroStatus, setFiltroStatus] = useState<string>("todos");
   const [filtroConta, setFiltroConta] = useState<string>("todas");
+  // Filtros — saídas
+  const [filtroStatusS, setFiltroStatusS] = useState<string>("todos");
+  const [filtroContaS, setFiltroContaS] = useState<string>("todas");
+  // Filtro — lançamentos combinados
+  const [filtroTipoLanc, setFiltroTipoLanc] = useState<"todos" | "entrada" | "saida">("todos");
 
-  // Data de referência para listagem: vencimento se houver, senão data
-  const refDate = (e: Entrada) => e.dataVencimento || e.data;
+  // Data de referência: vencimento se houver, senão data
+  const refDate = (e: { dataVencimento?: string; data: string }) => e.dataVencimento || e.data;
 
   const filtroEntradas = useMemo(() => {
     return entradas
@@ -118,7 +124,13 @@ export default function Financeiro() {
       .filter((e) => filtroConta === "todas" ? true : e.contaBancariaId === filtroConta)
       .sort((a, b) => refDate(b).localeCompare(refDate(a)));
   }, [entradas, filtroMes, filtroStatus, filtroConta]);
-  const filtroSaidas = useMemo(() => saidas.filter((s) => monthKey(s.data) === filtroMes).sort((a, b) => b.data.localeCompare(a.data)), [saidas, filtroMes]);
+  const filtroSaidas = useMemo(() => {
+    return saidas
+      .filter((s) => monthKey(refDate(s)) === filtroMes)
+      .filter((s) => filtroStatusS === "todos" ? true : calcStatus(s) === filtroStatusS)
+      .filter((s) => filtroContaS === "todas" ? true : s.contaBancariaId === filtroContaS)
+      .sort((a, b) => refDate(b).localeCompare(refDate(a)));
+  }, [saidas, filtroMes, filtroStatusS, filtroContaS]);
 
   const totalE = filtroEntradas.reduce((a, b) => a + b.valor, 0);
   const totalS = filtroSaidas.reduce((a, b) => a + b.valor, 0);
@@ -185,13 +197,36 @@ export default function Financeiro() {
   }
   function delE(id: string) { setEntradas(entradas.filter((e) => e.id !== id)); toast.success("Entrada excluída"); }
 
-  function openNewS() { setEditS(null); setFormS({ ...emptyS, data: todayISO(), contaBancariaId: bancos[0]?.id || "" }); setOpenS(true); }
-  function openEditS(s: Saida) { setEditS(s); setFormS(s); setOpenS(true); }
+  function openNewS() {
+    setEditS(null);
+    setFormS({ ...emptyS, data: todayISO(), dataVencimento: todayISO(), contaBancariaId: bancos[0]?.id || "" });
+    setOpenS(true);
+  }
+  function openEditS(s: Saida) { setEditS(s); setFormS({ ...emptyS, ...s }); setOpenS(true); }
   function saveS() {
-    if (!formS.descricao.trim()) return toast.error("Descrição obrigatória");
-    const conta = bancoEfetivo(formS.contaBancariaId, formS.formaPagamento);
-    if (!conta) return toast.error("Selecione o banco que vai pagar");
-    const clean: Omit<Saida, "id"> = { ...formS, contaBancariaId: conta };
+    if (!formS.planoContaId) return toast.error("Selecione a categoria");
+    if (!formS.subcategoria) return toast.error("Selecione a subcategoria");
+    if (!formS.valor || formS.valor <= 0) return toast.error("Informe um valor maior que zero");
+    if (!formS.dataVencimento) return toast.error("Informe a data de vencimento");
+
+    let formaPagamento = formS.formaPagamento;
+    let contaBancariaId = formS.contaBancariaId;
+    if (permutaBancoId && contaBancariaId === permutaBancoId) formaPagamento = "Permuta";
+    if (formaPagamento === "Permuta" && !contaBancariaId) contaBancariaId = caixaLojaId;
+    if (!contaBancariaId) return toast.error("Selecione a conta bancária");
+
+    const dataRef = formS.dataPagamento || formS.dataVencimento || todayISO();
+    const descricao = formS.subcategoria || formS.descricao || "";
+    const status: "Pago" | "A Pagar" = formS.dataPagamento ? "Pago" : "A Pagar";
+
+    const clean: Omit<Saida, "id"> = {
+      ...formS,
+      formaPagamento,
+      contaBancariaId,
+      data: dataRef,
+      descricao,
+      status,
+    };
     if (editS) {
       setSaidas(saidas.map((x) => x.id === editS.id ? { ...editS, ...clean } : x));
       toast.success("Saída atualizada");
@@ -245,6 +280,7 @@ export default function Financeiro() {
       <Tabs defaultValue="visao">
         <TabsList className="mb-4">
           <TabsTrigger value="visao">Visão Geral</TabsTrigger>
+          <TabsTrigger value="lancamentos">Lançamentos</TabsTrigger>
           <TabsTrigger value="entradas">Entradas</TabsTrigger>
           <TabsTrigger value="saidas">Saídas</TabsTrigger>
           <TabsTrigger value="anual">Mês a Mês</TabsTrigger>
@@ -346,36 +382,170 @@ export default function Financeiro() {
         </TabsContent>
 
         <TabsContent value="saidas">
-          <div className="flex justify-end mb-3"><Button onClick={openNewS}><Plus className="w-4 h-4 mr-1" />Nova Saída</Button></div>
+          <div className="flex flex-wrap items-end gap-2 justify-between mb-3">
+            <div className="flex flex-wrap gap-2">
+              <div>
+                <Label className="text-xs text-muted-foreground">Status</Label>
+                <Select value={filtroStatusS} onValueChange={setFiltroStatusS}>
+                  <SelectTrigger className="w-[180px]"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todos os status</SelectItem>
+                    <SelectItem value="Concluído">Concluído</SelectItem>
+                    <SelectItem value="Previsto para hoje">Previsto para hoje</SelectItem>
+                    <SelectItem value="Previsto">Previsto</SelectItem>
+                    <SelectItem value="Atrasado">Atrasado</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Conta bancária</Label>
+                <Select value={filtroContaS} onValueChange={setFiltroContaS}>
+                  <SelectTrigger className="w-[200px]"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todas">Todas as contas</SelectItem>
+                    {bancos.map((b) => <SelectItem key={b.id} value={b.id}>{b.nome}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <Button onClick={openNewS}><Plus className="w-4 h-4 mr-1" />Nova Saída</Button>
+          </div>
           <Card>
             <CardContent className="p-0 overflow-x-auto">
               <Table>
                 <TableHeader><TableRow>
-                  <TableHead>Data</TableHead><TableHead>Descrição</TableHead><TableHead>Categoria</TableHead>
-                  <TableHead>Banco</TableHead><TableHead>Pagamento</TableHead><TableHead>Status</TableHead>
-                  <TableHead className="text-right">Valor</TableHead><TableHead></TableHead>
+                  <TableHead>Data</TableHead>
+                  <TableHead>Categoria</TableHead>
+                  <TableHead>Subcategoria</TableHead>
+                  <TableHead>Fornecedor</TableHead>
+                  <TableHead className="text-right">Valor</TableHead>
+                  <TableHead>Conta</TableHead>
+                  <TableHead>Forma Pgto</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead></TableHead>
                 </TableRow></TableHeader>
                 <TableBody>
-                  {filtroSaidas.map((s) => (
-                    <TableRow key={s.id}>
-                      <TableCell>{fmtDate(s.data)}</TableCell>
-                      <TableCell className="font-medium">{s.descricao}</TableCell>
-                      <TableCell><Badge variant="secondary">{s.categoria}</Badge></TableCell>
-                      <TableCell className="text-sm">{bancoNome(s.contaBancariaId)}</TableCell>
-                      <TableCell className="text-sm">{s.formaPagamento}</TableCell>
-                      <TableCell><Badge variant={s.status === "Pago" ? "default" : "outline"}>{s.status}</Badge></TableCell>
-                      <TableCell className="text-right font-medium text-destructive">{fmtBRL(s.valor)}</TableCell>
-                      <TableCell className="text-right">
-                        <Button size="icon" variant="ghost" onClick={() => openEditS(s)}><Pencil className="w-4 h-4" /></Button>
-                        <DeleteBtn onConfirm={() => delS(s.id)} />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                  {filtroSaidas.length === 0 && <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-8">Sem registros no período.</TableCell></TableRow>}
+                  {filtroSaidas.map((s) => {
+                    const st = calcStatus(s);
+                    const cat = planoContas.find((p) => p.id === s.planoContaId)?.nome || s.categoria || "—";
+                    return (
+                      <TableRow key={s.id}>
+                        <TableCell className="whitespace-nowrap">{fmtDate(refDate(s))}</TableCell>
+                        <TableCell><Badge variant="secondary">{cat}</Badge></TableCell>
+                        <TableCell className="font-medium">{s.subcategoria || s.descricao}</TableCell>
+                        <TableCell className="text-sm">{s.fornecedor || "—"}</TableCell>
+                        <TableCell className="text-right font-medium text-destructive">{fmtBRL(s.valor)}</TableCell>
+                        <TableCell className="text-sm">{bancoNome(s.contaBancariaId)}</TableCell>
+                        <TableCell className="text-sm">{s.formaPagamento}</TableCell>
+                        <TableCell><Badge variant="outline" className={statusBadgeClass(st)}>{st}</Badge></TableCell>
+                        <TableCell className="text-right">
+                          <Button size="icon" variant="ghost" onClick={() => openEditS(s)}><Pencil className="w-4 h-4" /></Button>
+                          <DeleteBtn onConfirm={() => delS(s.id)} />
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                  {filtroSaidas.length === 0 && <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-8">Sem registros no período.</TableCell></TableRow>}
                 </TableBody>
               </Table>
               <div className="flex justify-end px-4 py-3 border-t bg-muted/30">
                 <span className="text-sm">Total: <strong className="text-destructive">{fmtBRL(totalS)}</strong></span>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="lancamentos">
+          <div className="flex flex-wrap items-end gap-2 justify-between mb-3">
+            <div className="flex flex-wrap gap-2">
+              <div>
+                <Label className="text-xs text-muted-foreground">Tipo</Label>
+                <Select value={filtroTipoLanc} onValueChange={(v: any) => setFiltroTipoLanc(v)}>
+                  <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todos</SelectItem>
+                    <SelectItem value="entrada">Entradas</SelectItem>
+                    <SelectItem value="saida">Saídas</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Conta bancária</Label>
+                <Select value={filtroConta} onValueChange={setFiltroConta}>
+                  <SelectTrigger className="w-[200px]"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todas">Todas as contas</SelectItem>
+                    {bancos.map((b) => <SelectItem key={b.id} value={b.id}>{b.nome}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={openNewS}><Plus className="w-4 h-4 mr-1" />Saída</Button>
+              <Button onClick={openNewE}><Plus className="w-4 h-4 mr-1" />Entrada</Button>
+            </div>
+          </div>
+          <Card>
+            <CardContent className="p-0 overflow-x-auto">
+              <Table>
+                <TableHeader><TableRow>
+                  <TableHead>Data</TableHead>
+                  <TableHead>Tipo</TableHead>
+                  <TableHead>Categoria</TableHead>
+                  <TableHead>Subcategoria</TableHead>
+                  <TableHead>Cliente / Fornecedor</TableHead>
+                  <TableHead className="text-right">Valor</TableHead>
+                  <TableHead>Conta</TableHead>
+                  <TableHead>Forma Pgto</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow></TableHeader>
+                <TableBody>
+                  {(() => {
+                    type Row = { id: string; tipo: "entrada" | "saida"; data: string; cat: string; sub: string; party: string; valor: number; conta: string; fp: string; st: StatusCalc };
+                    const rows: Row[] = [];
+                    if (filtroTipoLanc !== "saida") {
+                      filtroEntradas.forEach((e) => {
+                        const cat = planoContas.find((p) => p.id === e.planoContaId)?.nome || "—";
+                        const cli = clientes.find((c) => c.id === e.clienteId)?.nome || "—";
+                        rows.push({ id: "e-" + e.id, tipo: "entrada", data: refDate(e), cat, sub: e.subcategoria || e.descricao, party: cli, valor: e.valor, conta: bancoNome(e.contaBancariaId), fp: e.formaPagamento, st: calcStatus(e) });
+                      });
+                    }
+                    if (filtroTipoLanc !== "entrada") {
+                      filtroSaidas.forEach((s) => {
+                        const cat = planoContas.find((p) => p.id === s.planoContaId)?.nome || s.categoria || "—";
+                        rows.push({ id: "s-" + s.id, tipo: "saida", data: refDate(s), cat, sub: s.subcategoria || s.descricao, party: s.fornecedor || "—", valor: s.valor, conta: bancoNome(s.contaBancariaId), fp: s.formaPagamento, st: calcStatus(s) });
+                      });
+                    }
+                    rows.sort((a, b) => b.data.localeCompare(a.data));
+                    if (rows.length === 0) {
+                      return <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-8">Sem lançamentos no período.</TableCell></TableRow>;
+                    }
+                    return rows.map((r) => (
+                      <TableRow key={r.id}>
+                        <TableCell className="whitespace-nowrap">{fmtDate(r.data)}</TableCell>
+                        <TableCell>
+                          {r.tipo === "entrada"
+                            ? <Badge className="bg-success/15 text-success border-success/30 hover:bg-success/15" variant="outline"><ArrowUpCircle className="w-3 h-3 mr-1" />Entrada</Badge>
+                            : <Badge className="bg-destructive/15 text-destructive border-destructive/30 hover:bg-destructive/15" variant="outline"><ArrowDownCircle className="w-3 h-3 mr-1" />Saída</Badge>}
+                        </TableCell>
+                        <TableCell><Badge variant="secondary">{r.cat}</Badge></TableCell>
+                        <TableCell className="font-medium">{r.sub}</TableCell>
+                        <TableCell className="text-sm">{r.party}</TableCell>
+                        <TableCell className={cn("text-right font-medium", r.tipo === "entrada" ? "text-success" : "text-destructive")}>
+                          {r.tipo === "entrada" ? "+" : "−"} {fmtBRL(r.valor)}
+                        </TableCell>
+                        <TableCell className="text-sm">{r.conta}</TableCell>
+                        <TableCell className="text-sm">{r.fp}</TableCell>
+                        <TableCell><Badge variant="outline" className={statusBadgeClass(r.st)}>{r.st}</Badge></TableCell>
+                      </TableRow>
+                    ));
+                  })()}
+                </TableBody>
+              </Table>
+              <div className="flex justify-end gap-4 px-4 py-3 border-t bg-muted/30 text-sm">
+                <span>Entradas: <strong className="text-success">{fmtBRL(totalE)}</strong></span>
+                <span>Saídas: <strong className="text-destructive">{fmtBRL(totalS)}</strong></span>
+                <span>Saldo: <strong className={lucro >= 0 ? "text-success" : "text-destructive"}>{fmtBRL(lucro)}</strong></span>
               </div>
             </CardContent>
           </Card>
@@ -643,55 +813,127 @@ export default function Financeiro() {
       <Dialog open={openS} onOpenChange={setOpenS}>
         <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>{editS ? "Editar" : "Nova"} saída</DialogTitle></DialogHeader>
-          <div className="grid grid-cols-2 gap-3">
-            <div><Label>Data</Label><Input type="date" value={formS.data} onChange={(e) => setFormS({ ...formS, data: e.target.value })} /></div>
-            <div><Label>Valor (R$)</Label><Input type="number" step="0.01" value={formS.valor} onChange={(e) => setFormS({ ...formS, valor: parseFloat(e.target.value) || 0 })} /></div>
-
-            <div className="col-span-2">
-              <Label>Item cadastrado</Label>
-              <Select onValueChange={onPickItemDespesa}>
-                <SelectTrigger><SelectValue placeholder="Selecione um item de despesa" /></SelectTrigger>
+          <div className="grid grid-cols-2 gap-3 max-h-[70vh] overflow-y-auto pr-1">
+            {/* Categoria */}
+            <div>
+              <Label>Categoria *</Label>
+              <Select
+                value={formS.planoContaId || ""}
+                onValueChange={(v) => {
+                  const pc = categoriasDespesa.find((p) => p.id === v);
+                  setFormS({ ...formS, planoContaId: v, subcategoria: "", categoria: (pc?.nome as any) || formS.categoria });
+                }}
+              >
+                <SelectTrigger><SelectValue placeholder="Selecione…" /></SelectTrigger>
                 <SelectContent>
-                  {itensDespesa.map((s) => <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>)}
-                  {itensDespesa.length === 0 && <SelectItem value="_" disabled>Cadastre despesas no Plano de Contas</SelectItem>}
+                  {categoriasDespesa.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="col-span-2"><Label>Descrição</Label><Input value={formS.descricao} onChange={(e) => setFormS({ ...formS, descricao: e.target.value })} /></div>
+            {/* Subcategoria filha */}
             <div>
-              <Label>Categoria</Label>
-              <Select value={formS.categoria} onValueChange={(v: any) => setFormS({ ...formS, categoria: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{CAT_S.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Pagamento</Label>
-              <Select value={formS.formaPagamento} onValueChange={(v: any) => setFormS({ ...formS, formaPagamento: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{FP.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
-              </Select>
-            </div>
-            <div className="col-span-2">
-              <Label>Banco que vai pagar {formS.formaPagamento === "Permuta" && <span className="text-xs text-muted-foreground">(Permuta sai do Caixa da Loja)</span>}</Label>
+              <Label>Subcategoria *</Label>
               <Select
-                value={formS.formaPagamento === "Permuta" ? caixaLojaId : (formS.contaBancariaId || "")}
-                onValueChange={(v) => setFormS({ ...formS, contaBancariaId: v })}
-                disabled={formS.formaPagamento === "Permuta"}
+                value={formS.subcategoria || ""}
+                onValueChange={(v) => setFormS({ ...formS, subcategoria: v, descricao: v })}
+                disabled={!formS.planoContaId}
               >
-                <SelectTrigger><SelectValue placeholder="Selecione o banco" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={formS.planoContaId ? "Selecione…" : "Escolha a categoria"} /></SelectTrigger>
+                <SelectContent>
+                  {(categoriasDespesa.find((p) => p.id === formS.planoContaId)?.subcategorias || []).map((s) => (
+                    <SelectItem key={s.nome} value={s.nome}>{s.nome}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Valor */}
+            <div>
+              <Label>Valor (R$) *</Label>
+              <Input
+                type="number"
+                step="0.01"
+                value={formS.valor || ""}
+                onChange={(e) => setFormS({ ...formS, valor: parseFloat(e.target.value) || 0 })}
+              />
+            </div>
+
+            {/* Fornecedor (texto livre) */}
+            <div>
+              <Label>Fornecedor</Label>
+              <Input
+                value={formS.fornecedor || ""}
+                onChange={(e) => setFormS({ ...formS, fornecedor: e.target.value })}
+                placeholder="Nome do fornecedor (opcional)"
+              />
+            </div>
+
+            {/* Conta bancária */}
+            <div className="col-span-2">
+              <Label>Conta bancária *</Label>
+              <Select
+                value={formS.contaBancariaId || ""}
+                onValueChange={(v) => {
+                  const ehPermuta = permutaBancoId && v === permutaBancoId;
+                  setFormS({ ...formS, contaBancariaId: v, formaPagamento: ehPermuta ? "Permuta" : formS.formaPagamento });
+                }}
+              >
+                <SelectTrigger><SelectValue placeholder="Selecione…" /></SelectTrigger>
                 <SelectContent>
                   {bancos.map((b) => <SelectItem key={b.id} value={b.id}>{b.nome}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Datas */}
+            <div>
+              <Label>Data de vencimento *</Label>
+              <Input type="date" value={formS.dataVencimento || ""} onChange={(e) => setFormS({ ...formS, dataVencimento: e.target.value })} />
+            </div>
+            <div>
+              <Label>Data de pagamento</Label>
+              <Input type="date" value={formS.dataPagamento || ""} onChange={(e) => setFormS({ ...formS, dataPagamento: e.target.value })} />
+            </div>
+
+            {/* Forma de pagamento */}
+            <div className="col-span-2">
+              <Label>
+                Forma de pagamento *
+                {permutaBancoId && formS.contaBancariaId === permutaBancoId && (
+                  <span className="text-xs text-muted-foreground ml-2">(Conta Permuta → forma Permuta)</span>
+                )}
+              </Label>
+              <Select
+                value={formS.formaPagamento}
+                onValueChange={(v: any) => setFormS({ ...formS, formaPagamento: v })}
+                disabled={!!(permutaBancoId && formS.contaBancariaId === permutaBancoId)}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>{FP.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+
+            {/* Status calculado */}
             <div className="col-span-2">
               <Label>Status</Label>
-              <Select value={formS.status} onValueChange={(v: any) => setFormS({ ...formS, status: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent><SelectItem value="Pago">Pago</SelectItem><SelectItem value="A Pagar">A Pagar</SelectItem></SelectContent>
-              </Select>
+              <div className="mt-1">
+                <Badge variant="outline" className={statusBadgeClass(calcStatus(formS))}>{calcStatus(formS)}</Badge>
+                <span className="text-xs text-muted-foreground ml-2">calculado automaticamente</span>
+              </div>
+            </div>
+
+            {/* Observações */}
+            <div className="col-span-2">
+              <Label>Observações</Label>
+              <Textarea
+                rows={2}
+                value={formS.observacoes || ""}
+                onChange={(e) => setFormS({ ...formS, observacoes: e.target.value })}
+                placeholder="Anotações sobre o lançamento…"
+              />
             </div>
           </div>
           <DialogFooter><Button variant="outline" onClick={() => setOpenS(false)}>Cancelar</Button><Button onClick={saveS}>Salvar</Button></DialogFooter>
