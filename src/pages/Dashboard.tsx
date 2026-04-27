@@ -1,12 +1,14 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import { Card, CardContent } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import {
-  useEntradas, useSaidas, usePlanoContas,
+  useEntradas, useSaidas, usePlanoContas, useClientes, usePets,
 } from "@/store/useStore";
-import { fmtBRL, monthKey } from "@/lib/format";
-import { TrendingUp, TrendingDown, Wallet, Activity } from "lucide-react";
+import { fmtBRL, fmtDate, monthKey } from "@/lib/format";
+import { TrendingUp, TrendingDown, Wallet, Activity, Users, UserX, Crown, Receipt, ArrowUpDown } from "lucide-react";
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid,
   LineChart, Line, PieChart, Pie, Cell, Legend,
