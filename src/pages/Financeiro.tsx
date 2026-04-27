@@ -77,6 +77,13 @@ export default function Financeiro() {
     () => bancos.find((b) => /caixa/i.test(b.nome) && /loja/i.test(b.nome))?.id || bancos[0]?.id || "",
     [bancos],
   );
+  const permutaBancoId = useMemo(
+    () => bancos.find((b) => /^permuta$/i.test(b.nome))?.id || "",
+    [bancos],
+  );
+
+  // Categorias de receita do plano de contas
+  const categoriasReceita = useMemo(() => planoContas.filter((p) => p.tipo === "Receita"), [planoContas]);
 
   // Lista de serviços (subcategorias do plano de contas tipo Receita)
   const servicos = useMemo(() => {
