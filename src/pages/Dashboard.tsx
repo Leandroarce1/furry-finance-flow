@@ -109,6 +109,106 @@ export default function Dashboard() {
       .slice(0, 5);
   }, [entradas, currentMonth]);
 
+  // === Análises de clientes ===
+  const trintaDiasAtras = useMemo(() => {
+    const d = new Date(); d.setDate(d.getDate() - 30);
+    return d.toISOString().slice(0, 10);
+  }, []);
+
+  // mapa pet -> cliente para resolver atendimentos só com petId
+  const petClienteMap = useMemo(() => {
+    const m = new Map<string, string>();
+    pets.forEach((p) => m.set(p.id, p.clienteId));
+    return m;
+  }, [pets]);
+
+  function clienteIdDe(e: { clienteId?: string; petId?: string }) {
+    return e.clienteId || (e.petId ? petClienteMap.get(e.petId) : undefined);
+  }
+
+  const clientesStats = useMemo(() => {
+    const ativosSet = new Set<string>();
+    const ultimoPorCliente = new Map<string, string>();
+    const totalPorCliente = new Map<string, number>();
+    const qtdMesPorCliente = new Map<string, number>();
+    const totalMesPorCliente = new Map<string, number>();
+
+    entradas.forEach((e) => {
+      const cid = clienteIdDe(e);
+      if (!cid) return;
+      // último atendimento
+      const prev = ultimoPorCliente.get(cid);
+      if (!prev || e.data > prev) ultimoPorCliente.set(cid, e.data);
+      totalPorCliente.set(cid, (totalPorCliente.get(cid) || 0) + e.valor);
+      if (e.data >= trintaDiasAtras) ativosSet.add(cid);
+      if (monthKey(e.data) === currentMonth) {
+        qtdMesPorCliente.set(cid, (qtdMesPorCliente.get(cid) || 0) + 1);
+        totalMesPorCliente.set(cid, (totalMesPorCliente.get(cid) || 0) + e.valor);
+      }
+    });
+
+    const ativos = ativosSet.size;
+    const semRetorno = clientes.filter((c) => {
+      const u = ultimoPorCliente.get(c.id);
+      return u ? u < trintaDiasAtras : false; // só conta quem já foi atendido alguma vez
+    }).length;
+
+    const totalGastoGeral = Array.from(totalPorCliente.values()).reduce((a, b) => a + b, 0);
+    const ticketMedio = totalPorCliente.size > 0 ? totalGastoGeral / totalPorCliente.size : 0;
+
+    let topMes: { id: string; nome: string; valor: number } | null = null;
+    totalMesPorCliente.forEach((valor, id) => {
+      if (!topMes || valor > topMes.valor) {
+        topMes = { id, valor, nome: clientes.find((c) => c.id === id)?.nome || "—" };
+      }
+    });
+
+    const ranking = clientes
+      .map((c) => ({
+        id: c.id,
+        nome: c.nome,
+        atendimentosMes: qtdMesPorCliente.get(c.id) || 0,
+        totalMes: totalMesPorCliente.get(c.id) || 0,
+        ultimaVisita: ultimoPorCliente.get(c.id) || "",
+      }))
+      .filter((r) => r.atendimentosMes > 0 || r.totalMes > 0);
+
+    return { ativos, semRetorno, ticketMedio, topMes, ranking };
+  }, [entradas, clientes, currentMonth, trintaDiasAtras, petClienteMap]);
+
+  // Serviços mais realizados (mês) — para gráfico de barras
+  const servicosMes = useMemo(() => {
+    const map = new Map<string, number>();
+    entradas.filter((e) => monthKey(e.data) === currentMonth).forEach((e) => {
+      const k = e.descricao || "—";
+      map.set(k, (map.get(k) || 0) + 1);
+    });
+    return Array.from(map.entries())
+      .map(([nome, qtd]) => ({ nome, qtd }))
+      .sort((a, b) => b.qtd - a.qtd)
+      .slice(0, 8);
+  }, [entradas, currentMonth]);
+
+  // Ordenação do ranking
+  type SortKey = "nome" | "atendimentosMes" | "totalMes" | "ultimaVisita";
+  const [sortKey, setSortKey] = useState<SortKey>("totalMes");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const rankingSorted = useMemo(() => {
+    const arr = [...clientesStats.ranking];
+    arr.sort((a, b) => {
+      const va = a[sortKey] as string | number;
+      const vb = b[sortKey] as string | number;
+      if (va < vb) return sortDir === "asc" ? -1 : 1;
+      if (va > vb) return sortDir === "asc" ? 1 : -1;
+      return 0;
+    });
+    return arr;
+  }, [clientesStats.ranking, sortKey, sortDir]);
+  function toggleSort(k: SortKey) {
+    if (sortKey === k) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else { setSortKey(k); setSortDir(k === "nome" ? "asc" : "desc"); }
+  }
+
   const monthLabel = now.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
   const semDados = entradas.length === 0 && saidas.length === 0;
 
