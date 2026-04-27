@@ -254,11 +254,66 @@ export default function Dashboard() {
   return (
     <AppLayout title="Dashboard" subtitle={monthLabel}>
       <div className="space-y-6">
+        {/* Seletor de mês/ano */}
+        <section className="flex flex-wrap items-center gap-2">
+          <span className="text-xs uppercase tracking-wider text-muted-foreground mr-1">Período</span>
+          <Select value={String(mes)} onValueChange={(v) => setSelectedYM(`${ano}-${String(Number(v)).padStart(2, "0")}`)}>
+            <SelectTrigger className="w-[140px] h-9"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {MESES_LABEL.map((l, i) => (
+                <SelectItem key={i} value={String(i + 1)}>{l}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={String(ano)} onValueChange={(v) => setSelectedYM(`${v}-${String(mes).padStart(2, "0")}`)}>
+            <SelectTrigger className="w-[100px] h-9"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {anosDisponiveis.map((a) => (
+                <SelectItem key={a} value={String(a)}>{a}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </section>
+
         <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <Stat icon={TrendingUp} label="Receitas" value={fmtBRL(stats.totalE)} tone="success" />
           <Stat icon={TrendingDown} label="Despesas" value={fmtBRL(stats.totalS)} tone="destructive" />
-          <Stat icon={Wallet} label="Resultado" value={fmtBRL(stats.lucro)} tone="primary" />
+          <Stat icon={Wallet} label="Resultado" value={fmtBRL(stats.lucro)} tone={stats.lucro >= 0 ? "success" : "destructive"} />
           <Stat icon={Activity} label="Atendimentos" value={String(stats.atendimentos)} tone="muted" />
+        </section>
+
+        {/* Meta vs Realizado */}
+        <section>
+          <Panel title={`Meta vs Realizado · ${monthLabel}`}>
+            {metaVsReal.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-6 text-center">Nenhuma meta cadastrada para {ano}.</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                {metaVsReal.map((m) => (
+                  <div key={m.id} className="space-y-1.5">
+                    <div className="flex items-center justify-between gap-2 text-sm">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Target className={`w-3.5 h-3.5 shrink-0 ${m.tipo === "Receita" ? "text-success" : "text-destructive"}`} />
+                        <span className="font-medium truncate">{m.nome}</span>
+                      </div>
+                      <span className="text-xs text-muted-foreground shrink-0 tabular-nums">
+                        {fmtBRL(m.realizado)} / {fmtBRL(m.meta)}
+                      </span>
+                    </div>
+                    <Progress value={m.pct} className="h-2" />
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>{m.pct.toFixed(0)}%</span>
+                      <span>
+                        {m.tipo === "Receita"
+                          ? (m.realizado >= m.meta ? "Meta atingida" : `Faltam ${fmtBRL(Math.max(0, m.meta - m.realizado))}`)
+                          : (m.realizado <= m.meta ? "Dentro da meta" : `Acima em ${fmtBRL(m.realizado - m.meta)}`)}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Panel>
         </section>
 
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
