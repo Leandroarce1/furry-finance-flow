@@ -813,55 +813,127 @@ export default function Financeiro() {
       <Dialog open={openS} onOpenChange={setOpenS}>
         <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>{editS ? "Editar" : "Nova"} saída</DialogTitle></DialogHeader>
-          <div className="grid grid-cols-2 gap-3">
-            <div><Label>Data</Label><Input type="date" value={formS.data} onChange={(e) => setFormS({ ...formS, data: e.target.value })} /></div>
-            <div><Label>Valor (R$)</Label><Input type="number" step="0.01" value={formS.valor} onChange={(e) => setFormS({ ...formS, valor: parseFloat(e.target.value) || 0 })} /></div>
-
-            <div className="col-span-2">
-              <Label>Item cadastrado</Label>
-              <Select onValueChange={onPickItemDespesa}>
-                <SelectTrigger><SelectValue placeholder="Selecione um item de despesa" /></SelectTrigger>
+          <div className="grid grid-cols-2 gap-3 max-h-[70vh] overflow-y-auto pr-1">
+            {/* Categoria */}
+            <div>
+              <Label>Categoria *</Label>
+              <Select
+                value={formS.planoContaId || ""}
+                onValueChange={(v) => {
+                  const pc = categoriasDespesa.find((p) => p.id === v);
+                  setFormS({ ...formS, planoContaId: v, subcategoria: "", categoria: (pc?.nome as any) || formS.categoria });
+                }}
+              >
+                <SelectTrigger><SelectValue placeholder="Selecione…" /></SelectTrigger>
                 <SelectContent>
-                  {itensDespesa.map((s) => <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>)}
-                  {itensDespesa.length === 0 && <SelectItem value="_" disabled>Cadastre despesas no Plano de Contas</SelectItem>}
+                  {categoriasDespesa.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="col-span-2"><Label>Descrição</Label><Input value={formS.descricao} onChange={(e) => setFormS({ ...formS, descricao: e.target.value })} /></div>
+            {/* Subcategoria filha */}
             <div>
-              <Label>Categoria</Label>
-              <Select value={formS.categoria} onValueChange={(v: any) => setFormS({ ...formS, categoria: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{CAT_S.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Pagamento</Label>
-              <Select value={formS.formaPagamento} onValueChange={(v: any) => setFormS({ ...formS, formaPagamento: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{FP.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
-              </Select>
-            </div>
-            <div className="col-span-2">
-              <Label>Banco que vai pagar {formS.formaPagamento === "Permuta" && <span className="text-xs text-muted-foreground">(Permuta sai do Caixa da Loja)</span>}</Label>
+              <Label>Subcategoria *</Label>
               <Select
-                value={formS.formaPagamento === "Permuta" ? caixaLojaId : (formS.contaBancariaId || "")}
-                onValueChange={(v) => setFormS({ ...formS, contaBancariaId: v })}
-                disabled={formS.formaPagamento === "Permuta"}
+                value={formS.subcategoria || ""}
+                onValueChange={(v) => setFormS({ ...formS, subcategoria: v, descricao: v })}
+                disabled={!formS.planoContaId}
               >
-                <SelectTrigger><SelectValue placeholder="Selecione o banco" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={formS.planoContaId ? "Selecione…" : "Escolha a categoria"} /></SelectTrigger>
+                <SelectContent>
+                  {(categoriasDespesa.find((p) => p.id === formS.planoContaId)?.subcategorias || []).map((s) => (
+                    <SelectItem key={s.nome} value={s.nome}>{s.nome}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Valor */}
+            <div>
+              <Label>Valor (R$) *</Label>
+              <Input
+                type="number"
+                step="0.01"
+                value={formS.valor || ""}
+                onChange={(e) => setFormS({ ...formS, valor: parseFloat(e.target.value) || 0 })}
+              />
+            </div>
+
+            {/* Fornecedor (texto livre) */}
+            <div>
+              <Label>Fornecedor</Label>
+              <Input
+                value={formS.fornecedor || ""}
+                onChange={(e) => setFormS({ ...formS, fornecedor: e.target.value })}
+                placeholder="Nome do fornecedor (opcional)"
+              />
+            </div>
+
+            {/* Conta bancária */}
+            <div className="col-span-2">
+              <Label>Conta bancária *</Label>
+              <Select
+                value={formS.contaBancariaId || ""}
+                onValueChange={(v) => {
+                  const ehPermuta = permutaBancoId && v === permutaBancoId;
+                  setFormS({ ...formS, contaBancariaId: v, formaPagamento: ehPermuta ? "Permuta" : formS.formaPagamento });
+                }}
+              >
+                <SelectTrigger><SelectValue placeholder="Selecione…" /></SelectTrigger>
                 <SelectContent>
                   {bancos.map((b) => <SelectItem key={b.id} value={b.id}>{b.nome}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Datas */}
+            <div>
+              <Label>Data de vencimento *</Label>
+              <Input type="date" value={formS.dataVencimento || ""} onChange={(e) => setFormS({ ...formS, dataVencimento: e.target.value })} />
+            </div>
+            <div>
+              <Label>Data de pagamento</Label>
+              <Input type="date" value={formS.dataPagamento || ""} onChange={(e) => setFormS({ ...formS, dataPagamento: e.target.value })} />
+            </div>
+
+            {/* Forma de pagamento */}
+            <div className="col-span-2">
+              <Label>
+                Forma de pagamento *
+                {permutaBancoId && formS.contaBancariaId === permutaBancoId && (
+                  <span className="text-xs text-muted-foreground ml-2">(Conta Permuta → forma Permuta)</span>
+                )}
+              </Label>
+              <Select
+                value={formS.formaPagamento}
+                onValueChange={(v: any) => setFormS({ ...formS, formaPagamento: v })}
+                disabled={!!(permutaBancoId && formS.contaBancariaId === permutaBancoId)}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>{FP.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+
+            {/* Status calculado */}
             <div className="col-span-2">
               <Label>Status</Label>
-              <Select value={formS.status} onValueChange={(v: any) => setFormS({ ...formS, status: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent><SelectItem value="Pago">Pago</SelectItem><SelectItem value="A Pagar">A Pagar</SelectItem></SelectContent>
-              </Select>
+              <div className="mt-1">
+                <Badge variant="outline" className={statusBadgeClass(calcStatus(formS))}>{calcStatus(formS)}</Badge>
+                <span className="text-xs text-muted-foreground ml-2">calculado automaticamente</span>
+              </div>
+            </div>
+
+            {/* Observações */}
+            <div className="col-span-2">
+              <Label>Observações</Label>
+              <Textarea
+                rows={2}
+                value={formS.observacoes || ""}
+                onChange={(e) => setFormS({ ...formS, observacoes: e.target.value })}
+                placeholder="Anotações sobre o lançamento…"
+              />
             </div>
           </div>
           <DialogFooter><Button variant="outline" onClick={() => setOpenS(false)}>Cancelar</Button><Button onClick={saveS}>Salvar</Button></DialogFooter>
