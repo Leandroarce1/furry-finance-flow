@@ -93,15 +93,16 @@ export const seedBancos: ContaBancaria[] = [
 
 export const seedFornecedores: Fornecedor[] = [];
 
-// Metas conforme planilha (apenas Janeiro preenchido)
+// Metas anuais 2026 — valor mensal recorrente em todos os 12 meses
+const rep = (v: number) => Array(12).fill(v);
 export const seedMetas: Meta[] = [
-  { id: "m1", ano: 2026, planoContaId: "pc-r1", valores: [7500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
-  { id: "m2", ano: 2026, planoContaId: "pc-d1", valores: [1240, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
-  { id: "m3", ano: 2026, planoContaId: "pc-d2", valores: [480, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
-  { id: "m4", ano: 2026, planoContaId: "pc-d3", valores: [40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
-  { id: "m5", ano: 2026, planoContaId: "pc-d4", valores: [3000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
-  { id: "m6", ano: 2026, planoContaId: "pc-d5", valores: [100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
-  { id: "m7", ano: 2026, planoContaId: "pc-d6", valores: [40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+  { id: "m1", ano: 2026, planoContaId: "pc-r1", valores: rep(7500) },
+  { id: "m2", ano: 2026, planoContaId: "pc-d1", valores: rep(1240) },
+  { id: "m3", ano: 2026, planoContaId: "pc-d2", valores: rep(480) },
+  { id: "m4", ano: 2026, planoContaId: "pc-d3", valores: rep(40) },
+  { id: "m5", ano: 2026, planoContaId: "pc-d4", valores: rep(3000) },
+  { id: "m6", ano: 2026, planoContaId: "pc-d5", valores: rep(100) },
+  { id: "m7", ano: 2026, planoContaId: "pc-d6", valores: rep(40) },
 ];
 
 // Sem lançamentos pré-cadastrados — a planilha não traz movimentações ainda.
