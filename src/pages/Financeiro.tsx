@@ -197,13 +197,36 @@ export default function Financeiro() {
   }
   function delE(id: string) { setEntradas(entradas.filter((e) => e.id !== id)); toast.success("Entrada excluída"); }
 
-  function openNewS() { setEditS(null); setFormS({ ...emptyS, data: todayISO(), contaBancariaId: bancos[0]?.id || "" }); setOpenS(true); }
-  function openEditS(s: Saida) { setEditS(s); setFormS(s); setOpenS(true); }
+  function openNewS() {
+    setEditS(null);
+    setFormS({ ...emptyS, data: todayISO(), dataVencimento: todayISO(), contaBancariaId: bancos[0]?.id || "" });
+    setOpenS(true);
+  }
+  function openEditS(s: Saida) { setEditS(s); setFormS({ ...emptyS, ...s }); setOpenS(true); }
   function saveS() {
-    if (!formS.descricao.trim()) return toast.error("Descrição obrigatória");
-    const conta = bancoEfetivo(formS.contaBancariaId, formS.formaPagamento);
-    if (!conta) return toast.error("Selecione o banco que vai pagar");
-    const clean: Omit<Saida, "id"> = { ...formS, contaBancariaId: conta };
+    if (!formS.planoContaId) return toast.error("Selecione a categoria");
+    if (!formS.subcategoria) return toast.error("Selecione a subcategoria");
+    if (!formS.valor || formS.valor <= 0) return toast.error("Informe um valor maior que zero");
+    if (!formS.dataVencimento) return toast.error("Informe a data de vencimento");
+
+    let formaPagamento = formS.formaPagamento;
+    let contaBancariaId = formS.contaBancariaId;
+    if (permutaBancoId && contaBancariaId === permutaBancoId) formaPagamento = "Permuta";
+    if (formaPagamento === "Permuta" && !contaBancariaId) contaBancariaId = caixaLojaId;
+    if (!contaBancariaId) return toast.error("Selecione a conta bancária");
+
+    const dataRef = formS.dataPagamento || formS.dataVencimento || todayISO();
+    const descricao = formS.subcategoria || formS.descricao || "";
+    const status: "Pago" | "A Pagar" = formS.dataPagamento ? "Pago" : "A Pagar";
+
+    const clean: Omit<Saida, "id"> = {
+      ...formS,
+      formaPagamento,
+      contaBancariaId,
+      data: dataRef,
+      descricao,
+      status,
+    };
     if (editS) {
       setSaidas(saidas.map((x) => x.id === editS.id ? { ...editS, ...clean } : x));
       toast.success("Saída atualizada");
