@@ -159,11 +159,25 @@ export default function Financeiro() {
     setFormS((prev) => ({ ...prev, descricao: i.nome, planoContaId: i.planoContaId }));
   }
 
-  function openNewE() {
+  function openNewE(prefill?: Partial<Omit<Entrada, "id">>) {
     setEditE(null);
-    setFormE({ ...emptyE, data: todayISO(), dataVencimento: todayISO(), contaBancariaId: bancos[0]?.id || "" });
+    setFormE({ ...emptyE, data: todayISO(), dataVencimento: todayISO(), contaBancariaId: bancos[0]?.id || "", ...prefill });
     setOpenE(true);
   }
+
+  // Deep-link: abrir "Nova Entrada" com cliente pré-preenchido a partir de /financeiro?novaEntrada=1&clienteId=xxx[&petId=yyy]
+  useEffect(() => {
+    if (searchParams.get("novaEntrada") === "1") {
+      const clienteId = searchParams.get("clienteId") || "";
+      const petId = searchParams.get("petId") || "";
+      openNewE({ clienteId, petId });
+      searchParams.delete("novaEntrada");
+      searchParams.delete("clienteId");
+      searchParams.delete("petId");
+      setSearchParams(searchParams, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
   function openEditE(e: Entrada) { setEditE(e); setFormE({ ...emptyE, ...e }); setOpenE(true); }
   function saveE() {
     if (!formE.planoContaId) return toast.error("Selecione a categoria");
