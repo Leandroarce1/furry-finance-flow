@@ -280,6 +280,7 @@ export default function Financeiro() {
       <Tabs defaultValue="visao">
         <TabsList className="mb-4">
           <TabsTrigger value="visao">Visão Geral</TabsTrigger>
+          <TabsTrigger value="lancamentos">Lançamentos</TabsTrigger>
           <TabsTrigger value="entradas">Entradas</TabsTrigger>
           <TabsTrigger value="saidas">Saídas</TabsTrigger>
           <TabsTrigger value="anual">Mês a Mês</TabsTrigger>
