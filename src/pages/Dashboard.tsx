@@ -54,6 +54,8 @@ export default function Dashboard() {
   const [entradas] = useEntradas();
   const [saidas] = useSaidas();
   const [planoContas] = usePlanoContas();
+  const [clientes] = useClientes();
+  const [pets] = usePets();
 
   const now = new Date();
   const ano = now.getFullYear();
