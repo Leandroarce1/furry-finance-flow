@@ -307,6 +307,106 @@ export default function Dashboard() {
           </Panel>
         </section>
 
+        {/* === Seção Clientes === */}
+        <section className="space-y-4">
+          <h2 className="text-sm uppercase tracking-wider text-muted-foreground font-medium">Clientes</h2>
+
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <Stat icon={Users} label="Ativos (30 dias)" value={String(clientesStats.ativos)} tone="success" />
+            <Stat icon={UserX} label="Sem retorno >30d" value={String(clientesStats.semRetorno)} tone="destructive" />
+            <Stat icon={Receipt} label="Ticket médio / cliente" value={fmtBRL(clientesStats.ticketMedio)} tone="primary" />
+            <Stat
+              icon={Crown}
+              label="Maior gasto no mês"
+              value={clientesStats.topMes ? `${clientesStats.topMes.nome}` : "—"}
+              tone="muted"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="lg:col-span-2">
+              <Panel title={`Ranking de clientes · ${monthLabel}`}>
+                {rankingSorted.length === 0 ? (
+                  <p className="text-sm text-muted-foreground py-8 text-center">Sem atendimentos registrados no mês.</p>
+                ) : (
+                  <div className="overflow-x-auto -mx-1">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>
+                            <button onClick={() => toggleSort("nome")} className="inline-flex items-center gap-1 hover:text-foreground">
+                              Tutor <ArrowUpDown className="w-3 h-3 opacity-50" />
+                            </button>
+                          </TableHead>
+                          <TableHead className="text-right">
+                            <button onClick={() => toggleSort("atendimentosMes")} className="inline-flex items-center gap-1 hover:text-foreground">
+                              Atendimentos <ArrowUpDown className="w-3 h-3 opacity-50" />
+                            </button>
+                          </TableHead>
+                          <TableHead className="text-right">
+                            <button onClick={() => toggleSort("totalMes")} className="inline-flex items-center gap-1 hover:text-foreground">
+                              Total gasto <ArrowUpDown className="w-3 h-3 opacity-50" />
+                            </button>
+                          </TableHead>
+                          <TableHead className="text-right">
+                            <button onClick={() => toggleSort("ultimaVisita")} className="inline-flex items-center gap-1 hover:text-foreground">
+                              Última visita <ArrowUpDown className="w-3 h-3 opacity-50" />
+                            </button>
+                          </TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {rankingSorted.map((r) => (
+                          <TableRow key={r.id}>
+                            <TableCell className="font-medium">{r.nome}</TableCell>
+                            <TableCell className="text-right">
+                              <Badge variant="secondary">{r.atendimentosMes}</Badge>
+                            </TableCell>
+                            <TableCell className="text-right font-medium text-success">{fmtBRL(r.totalMes)}</TableCell>
+                            <TableCell className="text-right text-muted-foreground text-sm">{r.ultimaVisita ? fmtDate(r.ultimaVisita) : "—"}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </Panel>
+            </div>
+
+            <Panel title={`Serviços mais realizados · ${monthLabel}`}>
+              {servicosMes.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-12 text-center">Sem atendimentos no mês.</p>
+              ) : (
+                <div className="h-72">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={servicosMes}
+                      layout="vertical"
+                      margin={{ top: 4, right: 16, left: 8, bottom: 0 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
+                      <XAxis type="number" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} allowDecimals={false} />
+                      <YAxis
+                        type="category"
+                        dataKey="nome"
+                        width={120}
+                        tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                        axisLine={false}
+                        tickLine={false}
+                      />
+                      <Tooltip
+                        contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
+                        formatter={(v: any) => [`${v} atendimento${Number(v) !== 1 ? "s" : ""}`, "Quantidade"]}
+                      />
+                      <Bar dataKey="qtd" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
+            </Panel>
+          </div>
+        </section>
+
         {semDados && (
           <Card className="border-dashed">
             <CardContent className="p-6 text-center">
