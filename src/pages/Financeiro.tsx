@@ -144,15 +144,33 @@ export default function Financeiro() {
     setFormS((prev) => ({ ...prev, descricao: i.nome, planoContaId: i.planoContaId }));
   }
 
-  function openNewE() { setEditE(null); setFormE({ ...emptyE, data: todayISO(), contaBancariaId: bancos[0]?.id || "" }); setOpenE(true); }
-  function openEditE(e: Entrada) { setEditE(e); setFormE(e); setOpenE(true); }
+  function openNewE() {
+    setEditE(null);
+    setFormE({ ...emptyE, data: todayISO(), dataVencimento: todayISO(), contaBancariaId: bancos[0]?.id || "" });
+    setOpenE(true);
+  }
+  function openEditE(e: Entrada) { setEditE(e); setFormE({ ...emptyE, ...e }); setOpenE(true); }
   function saveE() {
-    if (!formE.descricao.trim()) return toast.error("Descrição obrigatória");
-    const conta = bancoEfetivo(formE.contaBancariaId, formE.formaPagamento);
-    if (!conta) return toast.error("Selecione o banco que vai receber");
+    if (!formE.planoContaId) return toast.error("Selecione a categoria");
+    if (!formE.subcategoria) return toast.error("Selecione a subcategoria");
+    if (!formE.valor || formE.valor <= 0) return toast.error("Informe um valor maior que zero");
+    if (!formE.contaBancariaId) return toast.error("Selecione a conta bancária");
+    if (!formE.dataVencimento) return toast.error("Informe a data de vencimento");
+
+    // se conta = Permuta, força forma = Permuta
+    let formaPagamento = formE.formaPagamento;
+    if (permutaBancoId && formE.contaBancariaId === permutaBancoId) formaPagamento = "Permuta";
+
+    const dataRef = formE.dataPagamento || formE.dataVencimento || todayISO();
+    const descricao = formE.subcategoria || formE.descricao || "";
+    const status = formE.dataPagamento ? "Pago" : "A Receber";
+
     const clean: Omit<Entrada, "id"> = {
       ...formE,
-      contaBancariaId: conta,
+      formaPagamento,
+      data: dataRef,
+      descricao,
+      status,
       clienteId: formE.clienteId || undefined,
       petId: formE.petId || undefined,
     };
