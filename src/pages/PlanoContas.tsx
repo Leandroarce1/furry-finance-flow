@@ -118,7 +118,7 @@ export default function PlanoContas() {
         <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>{edit ? "Editar" : "Nova"} categoria</DialogTitle></DialogHeader>
           <div className="grid gap-3">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <Label>Tipo</Label>
                 <Select value={form.tipo} onValueChange={(v: any) => setForm({ ...form, tipo: v })}>

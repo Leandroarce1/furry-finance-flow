@@ -431,7 +431,7 @@ function ClienteDialog({ open, setOpen, form, setForm, onSave, editing }: any) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="max-w-lg">
         <DialogHeader><DialogTitle>{editing ? "Editar" : "Novo"} cliente</DialogTitle></DialogHeader>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="col-span-2"><Label>Nome do tutor *</Label><Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} /></div>
           <div className="col-span-2"><Label>WhatsApp</Label><Input value={form.whatsapp} onChange={(e) => setForm({ ...form, whatsapp: e.target.value })} /></div>
           <div className="col-span-2"><Label>Observações</Label><Textarea value={form.observacoes} onChange={(e) => setForm({ ...form, observacoes: e.target.value })} /></div>
@@ -450,7 +450,7 @@ function PetDialog({ open, setOpen, form, setForm, onSave, editing }: any) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="max-w-lg">
         <DialogHeader><DialogTitle>{editing ? "Editar" : "Novo"} pet</DialogTitle></DialogHeader>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="col-span-2 flex items-center gap-3">
             {form.foto ? (
               <img src={form.foto} alt="Pet" className="w-20 h-20 rounded-xl object-cover border" />
