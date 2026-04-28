@@ -165,7 +165,7 @@ export default function Financeiro() {
     setOpenE(true);
   }
 
-  // Deep-link: abrir "Nova Entrada" com cliente pré-preenchido a partir de /financeiro?novaEntrada=1&clienteId=xxx[&petId=yyy]
+  // Deep-link: abrir "Nova Entrada" ou "Nova Saída" via query params
   useEffect(() => {
     if (searchParams.get("novaEntrada") === "1") {
       const clienteId = searchParams.get("clienteId") || "";
@@ -174,6 +174,11 @@ export default function Financeiro() {
       searchParams.delete("novaEntrada");
       searchParams.delete("clienteId");
       searchParams.delete("petId");
+      setSearchParams(searchParams, { replace: true });
+    }
+    if (searchParams.get("novaSaida") === "1") {
+      openNewS();
+      searchParams.delete("novaSaida");
       setSearchParams(searchParams, { replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
