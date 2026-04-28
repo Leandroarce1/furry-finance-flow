@@ -18,11 +18,12 @@ import {
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, ArrowDownCircle, ArrowUpCircle, Wallet, Check, ChevronsUpDown, PawPrint } from "lucide-react";
+import { Plus, Pencil, Trash2, ArrowDownCircle, ArrowUpCircle, Wallet, Check, ChevronsUpDown, PawPrint, Download } from "lucide-react";
 import { useBancos, useClientes, useEntradas, usePets, usePlanoContas, useSaidas } from "@/store/useStore";
 import type { CategoriaEntrada, CategoriaSaida, Entrada, FormaPagamento, Saida } from "@/lib/types";
 import { fmtBRL, fmtDate, monthKey, todayISO, uid } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { exportLancamentosLista } from "@/lib/exporters";
 
 const CAT_E: CategoriaEntrada[] = ["Banho", "Tosa", "Banho+Tosa", "Hidratação", "Outros"];
 const CAT_S: CategoriaSaida[] = ["Produtos", "Energia", "Aluguel", "Manutenção", "Outros"];
@@ -502,7 +503,27 @@ export default function Financeiro() {
                 </Select>
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  try {
+                    const ents = filtroTipoLanc === "saida" ? [] : filtroEntradas;
+                    const sais = filtroTipoLanc === "entrada" ? [] : filtroSaidas;
+                    exportLancamentosLista(
+                      ents, sais,
+                      { planoContas, clientes, bancos },
+                      `lancamentos-${filtroMes}`,
+                    );
+                    toast.success("Lista exportada");
+                  } catch (err) {
+                    console.error(err);
+                    toast.error("Erro ao exportar");
+                  }
+                }}
+              >
+                <Download className="w-4 h-4 mr-1" /> Exportar lista
+              </Button>
               <Button variant="outline" onClick={openNewS}><Plus className="w-4 h-4 mr-1" />Saída</Button>
               <Button onClick={() => openNewE()}><Plus className="w-4 h-4 mr-1" />Entrada</Button>
             </div>

@@ -5,8 +5,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Download } from "lucide-react";
+import { toast } from "sonner";
 import { useEntradas, useMetas, usePlanoContas, useSaidas } from "@/store/useStore";
 import { fmtBRL } from "@/lib/format";
+import { exportPrevistoRealizado } from "@/lib/exporters";
 
 const MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 
@@ -137,7 +141,7 @@ export default function PrevistoRealizado() {
       title="Previsto x Realizado"
       subtitle="Comparativo anual por categoria"
       actions={
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 md:gap-4 flex-wrap">
           <div className="flex items-center gap-2">
             <Switch id="modo" checked={incluirPrevistos} onCheckedChange={setIncluirPrevistos} />
             <Label htmlFor="modo" className="text-xs cursor-pointer">
@@ -148,6 +152,21 @@ export default function PrevistoRealizado() {
             <SelectTrigger className="w-[120px]"><SelectValue /></SelectTrigger>
             <SelectContent>{anos.map((a) => <SelectItem key={a} value={String(a)}>{a}</SelectItem>)}</SelectContent>
           </Select>
+          <Button
+            variant="outline"
+            className="gap-2"
+            onClick={() => {
+              try {
+                exportPrevistoRealizado(entradas, saidas, planoContas, metas, ano, incluirPrevistos);
+                toast.success("Planilha anual exportada");
+              } catch (err) {
+                console.error(err);
+                toast.error("Erro ao exportar");
+              }
+            }}
+          >
+            <Download className="w-4 h-4" /> Exportar Excel
+          </Button>
         </div>
       }
     >

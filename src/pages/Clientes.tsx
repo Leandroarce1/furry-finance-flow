@@ -15,10 +15,11 @@ import {
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Plus, Search, PawPrint, Pencil, Trash2, ArrowLeft, Phone, ScrollText, MessageCircle, Sparkles, CalendarDays, TrendingUp } from "lucide-react";
+import { Plus, Search, PawPrint, Pencil, Trash2, ArrowLeft, Phone, ScrollText, MessageCircle, Sparkles, CalendarDays, TrendingUp, Download } from "lucide-react";
 import { useBancos, useClientes, useEntradas, usePets } from "@/store/useStore";
 import type { Cliente, Pet } from "@/lib/types";
 import { fmtBRL, fmtDate, uid } from "@/lib/format";
+import { exportClientes } from "@/lib/exporters";
 
 const emptyCliente: Omit<Cliente, "id"> = { nome: "", cpf: "", whatsapp: "", endereco: "", bairro: "", cidade: "", observacoes: "" };
 const emptyPet: Omit<Pet, "id" | "clienteId"> = {
@@ -389,7 +390,25 @@ export default function Clientes() {
     <AppLayout
       title="Clientes & Pets"
       subtitle={`${clientes.length} clientes cadastrados`}
-      actions={<Button onClick={openNewCliente}><Plus className="w-4 h-4 mr-1" /> Novo Cliente</Button>}
+      actions={
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => {
+              try {
+                exportClientes(clientes, pets, entradas);
+                toast.success("Clientes exportados");
+              } catch (err) {
+                console.error(err);
+                toast.error("Erro ao exportar");
+              }
+            }}
+          >
+            <Download className="w-4 h-4 mr-1" /> Exportar
+          </Button>
+          <Button onClick={openNewCliente}><Plus className="w-4 h-4 mr-1" /> Novo Cliente</Button>
+        </div>
+      }
     >
       <div className="relative mb-4 max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
