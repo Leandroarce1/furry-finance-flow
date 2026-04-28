@@ -100,3 +100,35 @@
     @apply font-bold tracking-tight;
   }
 }
+
+@layer utilities {
+  /* Scrollbar oculta mas mantém funcionalidade de scroll */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Wrapper de tabelas para scroll horizontal em mobile */
+  .table-wrap {
+    @apply w-full overflow-x-auto;
+  }
+}
+
+@layer components {
+  /* Ajustes globais para mobile (< 768px) */
+  @media (max-width: 767px) {
+    /* Botões com área de toque mínima de 48px */
+    button:not([data-sidebar]):not([role="tab"]):not([cmdk-item]),
+    [role="button"]:not([data-sidebar]):not([role="tab"]) {
+      min-height: 44px;
+    }
+
+    /* Reduz fontes monetárias grandes */
+    .text-2xl { font-size: 1.25rem; line-height: 1.75rem; }
+    .text-3xl { font-size: 1.5rem; line-height: 2rem; }
+    .text-4xl { font-size: 1.875rem; line-height: 2.25rem; }
+  }
+}
