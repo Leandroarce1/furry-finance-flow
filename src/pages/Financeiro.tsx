@@ -357,12 +357,12 @@ export default function Financeiro() {
               <Table>
                 <TableHeader><TableRow>
                   <TableHead>Data</TableHead>
-                  <TableHead>Categoria</TableHead>
+                  <TableHead className="hidden md:table-cell">Categoria</TableHead>
                   <TableHead>Subcategoria</TableHead>
-                  <TableHead>Cliente</TableHead>
+                  <TableHead className="hidden md:table-cell">Cliente</TableHead>
                   <TableHead className="text-right">Valor</TableHead>
-                  <TableHead>Conta</TableHead>
-                  <TableHead>Forma Pgto</TableHead>
+                  <TableHead className="hidden lg:table-cell">Conta</TableHead>
+                  <TableHead className="hidden lg:table-cell">Forma Pgto</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead></TableHead>
                 </TableRow></TableHeader>
@@ -374,12 +374,12 @@ export default function Financeiro() {
                     return (
                       <TableRow key={e.id}>
                         <TableCell className="whitespace-nowrap">{fmtDate(refDate(e))}</TableCell>
-                        <TableCell><Badge variant="secondary">{cat}</Badge></TableCell>
+                        <TableCell className="hidden md:table-cell"><Badge variant="secondary">{cat}</Badge></TableCell>
                         <TableCell className="font-medium">{e.subcategoria || e.descricao}</TableCell>
-                        <TableCell className="text-sm">{cli?.nome || "—"}</TableCell>
-                        <TableCell className="text-right font-medium text-success">{fmtBRL(e.valor)}</TableCell>
-                        <TableCell className="text-sm">{bancoNome(e.contaBancariaId)}</TableCell>
-                        <TableCell className="text-sm">{e.formaPagamento}</TableCell>
+                        <TableCell className="hidden md:table-cell text-sm">{cli?.nome || "—"}</TableCell>
+                        <TableCell className="text-right font-medium text-success whitespace-nowrap">{fmtBRL(e.valor)}</TableCell>
+                        <TableCell className="hidden lg:table-cell text-sm">{bancoNome(e.contaBancariaId)}</TableCell>
+                        <TableCell className="hidden lg:table-cell text-sm">{e.formaPagamento}</TableCell>
                         <TableCell><Badge variant="outline" className={statusBadgeClass(st)}>{st}</Badge></TableCell>
                         <TableCell className="text-right">
                           <Button size="icon" variant="ghost" onClick={() => openEditE(e)}><Pencil className="w-4 h-4" /></Button>
