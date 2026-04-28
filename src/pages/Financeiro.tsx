@@ -616,7 +616,7 @@ export default function Financeiro() {
       <Dialog open={openE} onOpenChange={setOpenE}>
         <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>{editE ? "Editar" : "Nova"} entrada</DialogTitle></DialogHeader>
-          <div className="grid grid-cols-2 gap-3 max-h-[70vh] overflow-y-auto pr-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[70vh] overflow-y-auto pr-1">
             {/* Categoria */}
             <div>
               <Label>Categoria *</Label>
@@ -830,7 +830,7 @@ export default function Financeiro() {
       <Dialog open={openS} onOpenChange={setOpenS}>
         <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>{editS ? "Editar" : "Nova"} saída</DialogTitle></DialogHeader>
-          <div className="grid grid-cols-2 gap-3 max-h-[70vh] overflow-y-auto pr-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[70vh] overflow-y-auto pr-1">
             {/* Categoria */}
             <div>
               <Label>Categoria *</Label>
