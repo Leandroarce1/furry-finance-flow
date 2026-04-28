@@ -357,12 +357,12 @@ export default function Financeiro() {
               <Table>
                 <TableHeader><TableRow>
                   <TableHead>Data</TableHead>
-                  <TableHead>Categoria</TableHead>
+                  <TableHead className="hidden md:table-cell">Categoria</TableHead>
                   <TableHead>Subcategoria</TableHead>
-                  <TableHead>Cliente</TableHead>
+                  <TableHead className="hidden md:table-cell">Cliente</TableHead>
                   <TableHead className="text-right">Valor</TableHead>
-                  <TableHead>Conta</TableHead>
-                  <TableHead>Forma Pgto</TableHead>
+                  <TableHead className="hidden lg:table-cell">Conta</TableHead>
+                  <TableHead className="hidden lg:table-cell">Forma Pgto</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead></TableHead>
                 </TableRow></TableHeader>
@@ -374,12 +374,12 @@ export default function Financeiro() {
                     return (
                       <TableRow key={e.id}>
                         <TableCell className="whitespace-nowrap">{fmtDate(refDate(e))}</TableCell>
-                        <TableCell><Badge variant="secondary">{cat}</Badge></TableCell>
+                        <TableCell className="hidden md:table-cell"><Badge variant="secondary">{cat}</Badge></TableCell>
                         <TableCell className="font-medium">{e.subcategoria || e.descricao}</TableCell>
-                        <TableCell className="text-sm">{cli?.nome || "—"}</TableCell>
-                        <TableCell className="text-right font-medium text-success">{fmtBRL(e.valor)}</TableCell>
-                        <TableCell className="text-sm">{bancoNome(e.contaBancariaId)}</TableCell>
-                        <TableCell className="text-sm">{e.formaPagamento}</TableCell>
+                        <TableCell className="hidden md:table-cell text-sm">{cli?.nome || "—"}</TableCell>
+                        <TableCell className="text-right font-medium text-success whitespace-nowrap">{fmtBRL(e.valor)}</TableCell>
+                        <TableCell className="hidden lg:table-cell text-sm">{bancoNome(e.contaBancariaId)}</TableCell>
+                        <TableCell className="hidden lg:table-cell text-sm">{e.formaPagamento}</TableCell>
                         <TableCell><Badge variant="outline" className={statusBadgeClass(st)}>{st}</Badge></TableCell>
                         <TableCell className="text-right">
                           <Button size="icon" variant="ghost" onClick={() => openEditE(e)}><Pencil className="w-4 h-4" /></Button>
@@ -432,12 +432,12 @@ export default function Financeiro() {
               <Table>
                 <TableHeader><TableRow>
                   <TableHead>Data</TableHead>
-                  <TableHead>Categoria</TableHead>
+                  <TableHead className="hidden md:table-cell">Categoria</TableHead>
                   <TableHead>Subcategoria</TableHead>
-                  <TableHead>Fornecedor</TableHead>
+                  <TableHead className="hidden md:table-cell">Fornecedor</TableHead>
                   <TableHead className="text-right">Valor</TableHead>
-                  <TableHead>Conta</TableHead>
-                  <TableHead>Forma Pgto</TableHead>
+                  <TableHead className="hidden lg:table-cell">Conta</TableHead>
+                  <TableHead className="hidden lg:table-cell">Forma Pgto</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead></TableHead>
                 </TableRow></TableHeader>
@@ -448,12 +448,12 @@ export default function Financeiro() {
                     return (
                       <TableRow key={s.id}>
                         <TableCell className="whitespace-nowrap">{fmtDate(refDate(s))}</TableCell>
-                        <TableCell><Badge variant="secondary">{cat}</Badge></TableCell>
+                        <TableCell className="hidden md:table-cell"><Badge variant="secondary">{cat}</Badge></TableCell>
                         <TableCell className="font-medium">{s.subcategoria || s.descricao}</TableCell>
-                        <TableCell className="text-sm">{s.fornecedor || "—"}</TableCell>
-                        <TableCell className="text-right font-medium text-destructive">{fmtBRL(s.valor)}</TableCell>
-                        <TableCell className="text-sm">{bancoNome(s.contaBancariaId)}</TableCell>
-                        <TableCell className="text-sm">{s.formaPagamento}</TableCell>
+                        <TableCell className="hidden md:table-cell text-sm">{s.fornecedor || "—"}</TableCell>
+                        <TableCell className="text-right font-medium text-destructive whitespace-nowrap">{fmtBRL(s.valor)}</TableCell>
+                        <TableCell className="hidden lg:table-cell text-sm">{bancoNome(s.contaBancariaId)}</TableCell>
+                        <TableCell className="hidden lg:table-cell text-sm">{s.formaPagamento}</TableCell>
                         <TableCell><Badge variant="outline" className={statusBadgeClass(st)}>{st}</Badge></TableCell>
                         <TableCell className="text-right">
                           <Button size="icon" variant="ghost" onClick={() => openEditS(s)}><Pencil className="w-4 h-4" /></Button>
@@ -508,12 +508,12 @@ export default function Financeiro() {
                 <TableHeader><TableRow>
                   <TableHead>Data</TableHead>
                   <TableHead>Tipo</TableHead>
-                  <TableHead>Categoria</TableHead>
+                  <TableHead className="hidden md:table-cell">Categoria</TableHead>
                   <TableHead>Subcategoria</TableHead>
-                  <TableHead>Cliente / Fornecedor</TableHead>
+                  <TableHead className="hidden md:table-cell">Cliente / Fornecedor</TableHead>
                   <TableHead className="text-right">Valor</TableHead>
-                  <TableHead>Conta</TableHead>
-                  <TableHead>Forma Pgto</TableHead>
+                  <TableHead className="hidden lg:table-cell">Conta</TableHead>
+                  <TableHead className="hidden lg:table-cell">Forma Pgto</TableHead>
                   <TableHead>Status</TableHead>
                 </TableRow></TableHeader>
                 <TableBody>
@@ -545,14 +545,14 @@ export default function Financeiro() {
                             ? <Badge className="bg-success/15 text-success border-success/30 hover:bg-success/15" variant="outline"><ArrowUpCircle className="w-3 h-3 mr-1" />Entrada</Badge>
                             : <Badge className="bg-destructive/15 text-destructive border-destructive/30 hover:bg-destructive/15" variant="outline"><ArrowDownCircle className="w-3 h-3 mr-1" />Saída</Badge>}
                         </TableCell>
-                        <TableCell><Badge variant="secondary">{r.cat}</Badge></TableCell>
+                        <TableCell className="hidden md:table-cell"><Badge variant="secondary">{r.cat}</Badge></TableCell>
                         <TableCell className="font-medium">{r.sub}</TableCell>
-                        <TableCell className="text-sm">{r.party}</TableCell>
-                        <TableCell className={cn("text-right font-medium", r.tipo === "entrada" ? "text-success" : "text-destructive")}>
+                        <TableCell className="hidden md:table-cell text-sm">{r.party}</TableCell>
+                        <TableCell className={cn("text-right font-medium whitespace-nowrap", r.tipo === "entrada" ? "text-success" : "text-destructive")}>
                           {r.tipo === "entrada" ? "+" : "−"} {fmtBRL(r.valor)}
                         </TableCell>
-                        <TableCell className="text-sm">{r.conta}</TableCell>
-                        <TableCell className="text-sm">{r.fp}</TableCell>
+                        <TableCell className="hidden lg:table-cell text-sm">{r.conta}</TableCell>
+                        <TableCell className="hidden lg:table-cell text-sm">{r.fp}</TableCell>
                         <TableCell><Badge variant="outline" className={statusBadgeClass(r.st)}>{r.st}</Badge></TableCell>
                       </TableRow>
                     ));
@@ -616,7 +616,7 @@ export default function Financeiro() {
       <Dialog open={openE} onOpenChange={setOpenE}>
         <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>{editE ? "Editar" : "Nova"} entrada</DialogTitle></DialogHeader>
-          <div className="grid grid-cols-2 gap-3 max-h-[70vh] overflow-y-auto pr-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[70vh] overflow-y-auto pr-1">
             {/* Categoria */}
             <div>
               <Label>Categoria *</Label>
@@ -830,7 +830,7 @@ export default function Financeiro() {
       <Dialog open={openS} onOpenChange={setOpenS}>
         <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>{editS ? "Editar" : "Nova"} saída</DialogTitle></DialogHeader>
-          <div className="grid grid-cols-2 gap-3 max-h-[70vh] overflow-y-auto pr-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[70vh] overflow-y-auto pr-1">
             {/* Categoria */}
             <div>
               <Label>Categoria *</Label>

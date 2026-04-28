@@ -99,7 +99,7 @@ export default function Bancos() {
           <DialogHeader><DialogTitle>{edit ? "Editar" : "Nova"} conta bancária</DialogTitle></DialogHeader>
           <div className="grid gap-3">
             <div><Label>Nome</Label><Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} /></div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div><Label>Saldo Inicial (R$)</Label><Input type="number" step="0.01" value={form.saldoInicial} onChange={(e) => setForm({ ...form, saldoInicial: parseFloat(e.target.value) || 0 })} /></div>
               <div><Label>Data Início</Label><Input type="date" value={form.dataInicio} onChange={(e) => setForm({ ...form, dataInicio: e.target.value })} /></div>
             </div>

@@ -337,11 +337,11 @@ export default function Clientes() {
                       <TableHeader>
                         <TableRow>
                           <TableHead className="text-xs">Data</TableHead>
-                          <TableHead className="text-xs">Pet</TableHead>
+                          <TableHead className="text-xs hidden md:table-cell">Pet</TableHead>
                           <TableHead className="text-xs">Serviço</TableHead>
                           <TableHead className="text-xs text-right">Valor</TableHead>
-                          <TableHead className="text-xs">Forma Pgto</TableHead>
-                          <TableHead className="text-xs">Conta</TableHead>
+                          <TableHead className="text-xs hidden md:table-cell">Forma Pgto</TableHead>
+                          <TableHead className="text-xs hidden lg:table-cell">Conta</TableHead>
                           <TableHead className="text-xs">Status</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -352,11 +352,11 @@ export default function Clientes() {
                           return (
                             <TableRow key={a.id}>
                               <TableCell className="text-xs whitespace-nowrap">{fmtDate(d)}</TableCell>
-                              <TableCell className="text-xs">{petName(a.petId)}</TableCell>
+                              <TableCell className="text-xs hidden md:table-cell">{petName(a.petId)}</TableCell>
                               <TableCell className="text-xs">{a.subcategoria || a.descricao}</TableCell>
-                              <TableCell className="text-xs text-right font-semibold text-success">{fmtBRL(a.valor)}</TableCell>
-                              <TableCell className="text-xs">{a.formaPagamento}</TableCell>
-                              <TableCell className="text-xs">{bancoNome(a.contaBancariaId)}</TableCell>
+                              <TableCell className="text-xs text-right font-semibold text-success whitespace-nowrap">{fmtBRL(a.valor)}</TableCell>
+                              <TableCell className="text-xs hidden md:table-cell">{a.formaPagamento}</TableCell>
+                              <TableCell className="text-xs hidden lg:table-cell">{bancoNome(a.contaBancariaId)}</TableCell>
                               <TableCell><Badge variant="outline" className={`text-[10px] ${s.cls}`}>{s.label}</Badge></TableCell>
                             </TableRow>
                           );
@@ -364,9 +364,11 @@ export default function Clientes() {
                       </TableBody>
                       <TableFooter>
                         <TableRow>
-                          <TableCell colSpan={3} className="text-xs font-bold">Total</TableCell>
+                          <TableCell colSpan={2} className="text-xs font-bold md:hidden">Total</TableCell>
+                          <TableCell colSpan={3} className="text-xs font-bold hidden md:table-cell">Total</TableCell>
                           <TableCell className="text-xs text-right font-bold text-success">{fmtBRL(totalFiltro)}</TableCell>
-                          <TableCell colSpan={3} />
+                          <TableCell className="hidden md:table-cell" colSpan={2} />
+                          <TableCell />
                         </TableRow>
                       </TableFooter>
                     </Table>
@@ -431,7 +433,7 @@ function ClienteDialog({ open, setOpen, form, setForm, onSave, editing }: any) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="max-w-lg">
         <DialogHeader><DialogTitle>{editing ? "Editar" : "Novo"} cliente</DialogTitle></DialogHeader>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="col-span-2"><Label>Nome do tutor *</Label><Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} /></div>
           <div className="col-span-2"><Label>WhatsApp</Label><Input value={form.whatsapp} onChange={(e) => setForm({ ...form, whatsapp: e.target.value })} /></div>
           <div className="col-span-2"><Label>Observações</Label><Textarea value={form.observacoes} onChange={(e) => setForm({ ...form, observacoes: e.target.value })} /></div>
@@ -450,7 +452,7 @@ function PetDialog({ open, setOpen, form, setForm, onSave, editing }: any) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="max-w-lg">
         <DialogHeader><DialogTitle>{editing ? "Editar" : "Novo"} pet</DialogTitle></DialogHeader>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="col-span-2 flex items-center gap-3">
             {form.foto ? (
               <img src={form.foto} alt="Pet" className="w-20 h-20 rounded-xl object-cover border" />

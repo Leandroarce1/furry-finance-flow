@@ -101,17 +101,17 @@ export default function FluxoCaixa() {
               <Table>
                 <TableHeader><TableRow>
                   <TableHead>Data</TableHead><TableHead>Tipo</TableHead><TableHead>Descrição</TableHead>
-                  <TableHead>Banco</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Valor</TableHead>
+                  <TableHead className="hidden md:table-cell">Banco</TableHead><TableHead className="hidden md:table-cell">Status</TableHead><TableHead className="text-right">Valor</TableHead>
                 </TableRow></TableHeader>
                 <TableBody>
                   {movimentacoes.map((m) => (
                     <TableRow key={`${m.tipo}-${m.id}`}>
-                      <TableCell>{fmtDate(m.data)}</TableCell>
+                      <TableCell className="whitespace-nowrap">{fmtDate(m.data)}</TableCell>
                       <TableCell><Badge variant={m.tipo === "Entrada" ? "default" : "destructive"}>{m.tipo}</Badge></TableCell>
                       <TableCell className="font-medium">{m.descricao}</TableCell>
-                      <TableCell className="text-sm">{bancoNome(m.contaBancariaId)}</TableCell>
-                      <TableCell><Badge variant={m.status === "Pago" ? "secondary" : "outline"}>{m.status}</Badge></TableCell>
-                      <TableCell className={`text-right font-medium ${m.valor >= 0 ? "text-success" : "text-destructive"}`}>{fmtBRL(m.valor)}</TableCell>
+                      <TableCell className="hidden md:table-cell text-sm">{bancoNome(m.contaBancariaId)}</TableCell>
+                      <TableCell className="hidden md:table-cell"><Badge variant={m.status === "Pago" ? "secondary" : "outline"}>{m.status}</Badge></TableCell>
+                      <TableCell className={`text-right font-medium whitespace-nowrap ${m.valor >= 0 ? "text-success" : "text-destructive"}`}>{fmtBRL(m.valor)}</TableCell>
                     </TableRow>
                   ))}
                   {movimentacoes.length === 0 && <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">Sem movimentações.</TableCell></TableRow>}
