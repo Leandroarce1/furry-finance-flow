@@ -8,7 +8,9 @@ import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   useEntradas, useSaidas, usePlanoContas, useClientes, usePets, useMetas,
+  useBancos, useSettings,
 } from "@/store/useStore";
+import { ExportMenu } from "@/components/ExportMenu";
 import { fmtBRL, fmtDate, monthKey } from "@/lib/format";
 import { TrendingUp, TrendingDown, Wallet, Activity, Users, UserX, Crown, Receipt, ArrowUpDown, Target } from "lucide-react";
 import {
@@ -59,6 +61,8 @@ export default function Dashboard() {
   const [clientes] = useClientes();
   const [pets] = usePets();
   const [metas] = useMetas();
+  const [bancos] = useBancos();
+  const [settings] = useSettings();
 
   const now = new Date();
   const defaultYM = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
@@ -252,7 +256,23 @@ export default function Dashboard() {
   const semDados = entradas.length === 0 && saidas.length === 0;
 
   return (
-    <AppLayout title="Dashboard" subtitle={monthLabel}>
+    <AppLayout
+      title="Dashboard"
+      subtitle={monthLabel}
+      actions={
+        <ExportMenu
+          ym={selectedYM}
+          entradas={entradas}
+          saidas={saidas}
+          clientes={clientes}
+          pets={pets}
+          planoContas={planoContas}
+          metas={metas}
+          bancos={bancos}
+          nomeEmpresa={settings.nomePetshop || "Pet & Cia Banho e Tosa"}
+        />
+      }
+    >
       <div className="space-y-6">
         {/* Seletor de mês/ano */}
         <section className="flex flex-wrap items-center gap-2">
