@@ -99,18 +99,18 @@ export function AppSidebar() {
           <SidebarMenuButton
             onClick={() => toggleGroup(item.title)}
             className={cn(
-              "flex items-center gap-3 rounded-lg transition-all w-full h-10 px-3",
+              "flex items-center gap-3 rounded-lg transition-all w-full h-11 px-3 font-semibold",
               isGroupActive
-                ? "bg-primary/10 text-primary font-semibold"
+                ? "bg-primary/15 text-primary"
                 : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
             )}
           >
-            <item.icon className="w-5 h-5 shrink-0" />
-            <span className="text-sm flex-1 text-left">{item.title}</span>
-            <ChevronDown className={cn("w-4 h-4 shrink-0 transition-transform", open && "rotate-180")} />
+            <item.icon className={cn("w-5 h-5 shrink-0", isGroupActive ? "text-primary" : "text-sidebar-foreground/80")} />
+            <span className="text-[0.95rem] flex-1 text-left">{item.title}</span>
+            <ChevronDown className={cn("w-4 h-4 shrink-0 transition-transform opacity-70", open && "rotate-180")} />
           </SidebarMenuButton>
           {open && (
-            <SidebarMenu className="mt-1 ml-2 border-l border-sidebar-border pl-2 gap-0.5">
+            <SidebarMenu className="mt-1 ml-3 border-l-2 border-sidebar-border pl-2 gap-0.5">
               {item.children.map((c) => {
                 const childBase = c.url.split("?")[0];
                 const childQuery = c.url.includes("?") ? c.url.split("?")[1] : "";
@@ -123,13 +123,13 @@ export function AppSidebar() {
                       <NavLink
                         to={c.url}
                         className={cn(
-                          "flex items-center gap-2 rounded-md transition-all h-9 pl-4 pr-3 text-sm",
+                          "flex items-center gap-2 rounded-md transition-all h-9 pl-3 pr-3 text-[0.875rem]",
                           childActive
-                            ? "bg-primary text-primary-foreground font-medium shadow-elegant"
-                            : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                            ? "bg-primary text-primary-foreground font-semibold shadow-elegant"
+                            : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-primary",
                         )}
                       >
-                        <c.icon className="w-4 h-4 shrink-0" />
+                        <c.icon className={cn("w-4 h-4 shrink-0", childActive ? "text-primary-foreground" : "text-sidebar-foreground/70")} />
                         <span className="truncate">{c.title}</span>
                       </NavLink>
                     </SidebarMenuButton>
@@ -150,10 +150,10 @@ export function AppSidebar() {
             end
             className={({ isActive }) =>
               cn(
-                "flex items-center gap-3 rounded-lg transition-all h-10 px-3",
+                "flex items-center gap-3 rounded-lg transition-all h-11 px-3 font-semibold text-[0.95rem]",
                 isActive
-                  ? "bg-primary text-primary-foreground font-medium shadow-elegant"
-                  : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                  ? "bg-primary text-primary-foreground shadow-elegant"
+                  : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-primary",
               )
             }
           >
