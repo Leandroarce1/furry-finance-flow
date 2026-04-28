@@ -337,11 +337,11 @@ export default function Clientes() {
                       <TableHeader>
                         <TableRow>
                           <TableHead className="text-xs">Data</TableHead>
-                          <TableHead className="text-xs">Pet</TableHead>
+                          <TableHead className="text-xs hidden md:table-cell">Pet</TableHead>
                           <TableHead className="text-xs">Serviço</TableHead>
                           <TableHead className="text-xs text-right">Valor</TableHead>
-                          <TableHead className="text-xs">Forma Pgto</TableHead>
-                          <TableHead className="text-xs">Conta</TableHead>
+                          <TableHead className="text-xs hidden md:table-cell">Forma Pgto</TableHead>
+                          <TableHead className="text-xs hidden lg:table-cell">Conta</TableHead>
                           <TableHead className="text-xs">Status</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -352,11 +352,11 @@ export default function Clientes() {
                           return (
                             <TableRow key={a.id}>
                               <TableCell className="text-xs whitespace-nowrap">{fmtDate(d)}</TableCell>
-                              <TableCell className="text-xs">{petName(a.petId)}</TableCell>
+                              <TableCell className="text-xs hidden md:table-cell">{petName(a.petId)}</TableCell>
                               <TableCell className="text-xs">{a.subcategoria || a.descricao}</TableCell>
-                              <TableCell className="text-xs text-right font-semibold text-success">{fmtBRL(a.valor)}</TableCell>
-                              <TableCell className="text-xs">{a.formaPagamento}</TableCell>
-                              <TableCell className="text-xs">{bancoNome(a.contaBancariaId)}</TableCell>
+                              <TableCell className="text-xs text-right font-semibold text-success whitespace-nowrap">{fmtBRL(a.valor)}</TableCell>
+                              <TableCell className="text-xs hidden md:table-cell">{a.formaPagamento}</TableCell>
+                              <TableCell className="text-xs hidden lg:table-cell">{bancoNome(a.contaBancariaId)}</TableCell>
                               <TableCell><Badge variant="outline" className={`text-[10px] ${s.cls}`}>{s.label}</Badge></TableCell>
                             </TableRow>
                           );
@@ -364,9 +364,11 @@ export default function Clientes() {
                       </TableBody>
                       <TableFooter>
                         <TableRow>
-                          <TableCell colSpan={3} className="text-xs font-bold">Total</TableCell>
+                          <TableCell colSpan={2} className="text-xs font-bold md:hidden">Total</TableCell>
+                          <TableCell colSpan={3} className="text-xs font-bold hidden md:table-cell">Total</TableCell>
                           <TableCell className="text-xs text-right font-bold text-success">{fmtBRL(totalFiltro)}</TableCell>
-                          <TableCell colSpan={3} />
+                          <TableCell className="hidden md:table-cell" colSpan={2} />
+                          <TableCell />
                         </TableRow>
                       </TableFooter>
                     </Table>

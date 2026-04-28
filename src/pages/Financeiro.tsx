@@ -508,12 +508,12 @@ export default function Financeiro() {
                 <TableHeader><TableRow>
                   <TableHead>Data</TableHead>
                   <TableHead>Tipo</TableHead>
-                  <TableHead>Categoria</TableHead>
+                  <TableHead className="hidden md:table-cell">Categoria</TableHead>
                   <TableHead>Subcategoria</TableHead>
-                  <TableHead>Cliente / Fornecedor</TableHead>
+                  <TableHead className="hidden md:table-cell">Cliente / Fornecedor</TableHead>
                   <TableHead className="text-right">Valor</TableHead>
-                  <TableHead>Conta</TableHead>
-                  <TableHead>Forma Pgto</TableHead>
+                  <TableHead className="hidden lg:table-cell">Conta</TableHead>
+                  <TableHead className="hidden lg:table-cell">Forma Pgto</TableHead>
                   <TableHead>Status</TableHead>
                 </TableRow></TableHeader>
                 <TableBody>
@@ -545,14 +545,14 @@ export default function Financeiro() {
                             ? <Badge className="bg-success/15 text-success border-success/30 hover:bg-success/15" variant="outline"><ArrowUpCircle className="w-3 h-3 mr-1" />Entrada</Badge>
                             : <Badge className="bg-destructive/15 text-destructive border-destructive/30 hover:bg-destructive/15" variant="outline"><ArrowDownCircle className="w-3 h-3 mr-1" />Saída</Badge>}
                         </TableCell>
-                        <TableCell><Badge variant="secondary">{r.cat}</Badge></TableCell>
+                        <TableCell className="hidden md:table-cell"><Badge variant="secondary">{r.cat}</Badge></TableCell>
                         <TableCell className="font-medium">{r.sub}</TableCell>
-                        <TableCell className="text-sm">{r.party}</TableCell>
-                        <TableCell className={cn("text-right font-medium", r.tipo === "entrada" ? "text-success" : "text-destructive")}>
+                        <TableCell className="hidden md:table-cell text-sm">{r.party}</TableCell>
+                        <TableCell className={cn("text-right font-medium whitespace-nowrap", r.tipo === "entrada" ? "text-success" : "text-destructive")}>
                           {r.tipo === "entrada" ? "+" : "−"} {fmtBRL(r.valor)}
                         </TableCell>
-                        <TableCell className="text-sm">{r.conta}</TableCell>
-                        <TableCell className="text-sm">{r.fp}</TableCell>
+                        <TableCell className="hidden lg:table-cell text-sm">{r.conta}</TableCell>
+                        <TableCell className="hidden lg:table-cell text-sm">{r.fp}</TableCell>
                         <TableCell><Badge variant="outline" className={statusBadgeClass(r.st)}>{r.st}</Badge></TableCell>
                       </TableRow>
                     ));
